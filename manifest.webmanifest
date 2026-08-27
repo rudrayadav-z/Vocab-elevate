@@ -1,0 +1,14 @@
+{
+  "name": "Vocario — a vocabulary drawer",
+  "short_name": "Vocario",
+  "description": "Look up any English word, file it as an index card, review it on a spaced-repetition schedule, and level up as you go. Syncs across every device.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#eaf5ff",
+  "theme_color": "#eaf5ff",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
