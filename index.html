@@ -383,12 +383,24 @@ label.opt .note{display:block;font-size:13px;color:var(--ink-2);font-style:itali
 
     <div class="auth-divider"><span></span>or use email<span></span></div>
 
-    <form id="authForm" autocomplete="off">
-      <label class="sr" for="authEmail">Email address</label>
-      <input id="authEmail" type="email" placeholder="you@example.com" required>
-      <button type="submit" id="authSubmit">Send me a sign-in link</button>
-    </form>
-    <p class="auth-note">No password to remember — we'll email you a one-tap link.</p>
+    <div id="emailStep">
+      <form id="authForm" autocomplete="off">
+        <label class="sr" for="authEmail">Email address</label>
+        <input id="authEmail" type="email" placeholder="you@example.com" required>
+        <button type="submit" id="authSubmit">Send me a code</button>
+      </form>
+      <p class="auth-note">No password to remember — we'll email you a 6-digit code.</p>
+    </div>
+
+    <div id="codeStep" hidden>
+      <form id="codeForm" autocomplete="off">
+        <label class="sr" for="authCode">6-digit code</label>
+        <input id="authCode" inputmode="numeric" maxlength="6" placeholder="000000" required>
+        <button type="submit" id="codeSubmit">Verify & sign in</button>
+      </form>
+      <p class="auth-note"><button type="button" id="backToEmail" class="linkish" style="background:none;font-size:13px">Use a different email</button></p>
+    </div>
+
     <p class="authmsg" id="authMsg"></p>
   </div>
 </div>
@@ -504,8 +516,8 @@ let ui = { view:"add", flipped:false, currentId:null, tick:0, undo:[], typedGues
    protection comes from the Row Level Security rules on the
    "cards" table, not from hiding this key.
    ============================================================ */
-const SUPABASE_URL = "https://hvbyuppmxywkhpbfewbx.supabase.co";
-const SUPABASE_KEY = "sb_publishable_fkrcJ1IyxXRPnStOwsXxVA__-6kk0_d";
+const SUPABASE_URL = "https://zoaijkwlasouytwkbkqu.supabase.co";
+const SUPABASE_KEY = "sb_publishable_VhBZ9tVW5h9DNFMGgvF0PQ_5RsMh8Vg";
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 function rowToCard(r){
@@ -562,6 +574,11 @@ async function initAuth(){
 function showAuthGate(){
   $("#authGate").hidden = false;
   $("#app").hidden = true;
+  $("#codeStep").hidden = true;
+  $("#emailStep").hidden = false;
+  $("#authEmail").value = "";
+  $("#authCode").value = "";
+  $("#authMsg").textContent = "";
 }
 async function onLoggedIn(session){
   const localCards = state.cards; // whatever this browser had saved before signing in
@@ -1469,18 +1486,41 @@ $("#googleBtn").addEventListener("click", async () => {
   });
 });
 
+let pendingAuthEmail = "";
+
 $("#authForm").addEventListener("submit", async e => {
   e.preventDefault();
   const email = $("#authEmail").value.trim();
   if(!email) return;
   const btn = $("#authSubmit");
   btn.disabled = true; btn.textContent = "Sending…";
-  const { error } = await db.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: window.location.origin + window.location.pathname }
-  });
-  btn.disabled = false; btn.textContent = "Send me a sign-in link";
-  $("#authMsg").textContent = error ? error.message : "Check your email for a sign-in link.";
+  const { error } = await db.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
+  btn.disabled = false; btn.textContent = "Send me a code";
+  if(error){ $("#authMsg").textContent = error.message; return; }
+  pendingAuthEmail = email;
+  $("#emailStep").hidden = true;
+  $("#codeStep").hidden = false;
+  $("#authMsg").textContent = "Code sent — check your inbox.";
+  setTimeout(() => $("#authCode").focus(), 0);
+});
+
+$("#backToEmail").addEventListener("click", () => {
+  $("#codeStep").hidden = true;
+  $("#emailStep").hidden = false;
+  $("#authMsg").textContent = "";
+  $("#authCode").value = "";
+});
+
+$("#codeForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const token = $("#authCode").value.trim();
+  if(!token) return;
+  const btn = $("#codeSubmit");
+  btn.disabled = true; btn.textContent = "Checking…";
+  const { error } = await db.auth.verifyOtp({ email: pendingAuthEmail, token, type: "email" });
+  btn.disabled = false; btn.textContent = "Verify & sign in";
+  $("#authMsg").textContent = error ? "That code didn't work — try again." : "";
+  // On success, onAuthStateChange (already wired elsewhere) takes it from here.
 });
 
 $("#lookupForm").addEventListener("submit", e => {
