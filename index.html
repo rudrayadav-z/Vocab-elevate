@@ -1519,7 +1519,7 @@ $("#codeForm").addEventListener("submit", async e => {
   btn.disabled = true; btn.textContent = "Checking…";
   const { error } = await db.auth.verifyOtp({ email: pendingAuthEmail, token, type: "email" });
   btn.disabled = false; btn.textContent = "Verify & sign in";
-  $("#authMsg").textContent = error ? "That code didn't work — try again." : "";
+  $("#authMsg").textContent = error ? `Error: ${error.message}` : "";
   // On success, onAuthStateChange (already wired elsewhere) takes it from here.
 });
 
