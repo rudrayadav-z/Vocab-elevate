@@ -394,8 +394,8 @@ label.opt .note{display:block;font-size:13px;color:var(--ink-2);font-style:itali
 
     <div id="codeStep" hidden>
       <form id="codeForm" autocomplete="off">
-        <label class="sr" for="authCode">6-digit code</label>
-        <input id="authCode" inputmode="numeric" maxlength="6" placeholder="000000" required>
+        <label class="sr" for="authCode">Sign-in code</label>
+        <input id="authCode" inputmode="numeric" maxlength="10" placeholder="Code from your email" required>
         <button type="submit" id="codeSubmit">Verify & sign in</button>
       </form>
       <p class="auth-note"><button type="button" id="backToEmail" class="linkish" style="background:none;font-size:13px">Use a different email</button></p>
@@ -1513,7 +1513,7 @@ $("#backToEmail").addEventListener("click", () => {
 
 $("#codeForm").addEventListener("submit", async e => {
   e.preventDefault();
-  const token = $("#authCode").value.trim();
+  const token = $("#authCode").value.replace(/\D/g, "");
   if(!token) return;
   const btn = $("#codeSubmit");
   btn.disabled = true; btn.textContent = "Checking…";
