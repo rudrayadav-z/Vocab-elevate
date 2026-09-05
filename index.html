@@ -1523,9 +1523,17 @@ $("#codeForm").addEventListener("submit", async e => {
     const retry = await db.auth.verifyOtp({ email: pendingAuthEmail, token, type: "signup" });
     error = retry.error;
   }
+  if(!error){
+    btn.textContent = "✓ Signed in!";
+    $("#authMsg").textContent = "Success — loading your deck…";
+    $("#authMsg").style.color = "var(--green-dk)";
+    // Stay disabled: this code is now used up, and onAuthStateChange (wired
+    // elsewhere) is about to switch the screen over on its own.
+    return;
+  }
   btn.disabled = false; btn.textContent = "Verify & sign in";
-  $("#authMsg").textContent = error ? `Error: ${error.message}` : "";
-  // On success, onAuthStateChange (already wired elsewhere) takes it from here.
+  $("#authMsg").style.color = "";
+  $("#authMsg").textContent = `Error: ${error.message}`;
 });
 
 $("#lookupForm").addEventListener("submit", e => {
