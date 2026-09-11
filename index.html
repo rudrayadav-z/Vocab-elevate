@@ -248,6 +248,7 @@ h2.title em{color:var(--orange-dk)}
 
 /* ---------- auth ---------- */
 #authGate{min-height:80dvh;display:flex;align-items:center;justify-content:center;padding:20px}
+#authGate[hidden]{display:none}
 .authcard{max-width:400px;width:100%;background:var(--card);color:var(--ink);border:4px solid var(--edge);
   box-shadow:6px 6px 0 var(--edge);padding:34px 30px 28px;text-align:center;
   animation:authIn .4s cubic-bezier(.2,.8,.2,1) both}
@@ -287,6 +288,15 @@ h2.title em{color:var(--orange-dk)}
   border:2px solid var(--edge);padding:6px 10px;flex:none;margin-left:12px}
 .acctrow button:hover{background:#6a45e0}
 @media(max-width:420px){.authcard{padding:26px 20px 22px}}
+
+.auth-tabs{display:flex;gap:6px;margin-bottom:14px}
+.auth-tab{flex:1;padding:9px;background:var(--panel2);border:2px solid var(--edge);
+  font-family:var(--pixel);font-size:9px;color:var(--ink-2)}
+.auth-tab:hover{background:#dcefff}
+.auth-tab.active{background:var(--yellow);color:var(--ink)}
+.auth-remember{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink-2);
+  font-family:var(--body);margin:-2px 0 12px;text-align:left}
+.auth-remember input{width:16px;height:16px;accent-color:var(--orange);margin:0}
 
 /* ---------- stats ---------- */
 .grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:22px}
@@ -383,22 +393,53 @@ label.opt .note{display:block;font-size:13px;color:var(--ink-2);font-style:itali
 
     <div class="auth-divider"><span></span>or use email<span></span></div>
 
-    <div id="emailStep">
-      <form id="authForm" autocomplete="off">
-        <label class="sr" for="authEmail">Email address</label>
-        <input id="authEmail" type="email" placeholder="you@example.com" required>
-        <button type="submit" id="authSubmit">Send me a code</button>
-      </form>
-      <p class="auth-note">No password to remember — we'll email you a 6-digit code.</p>
+    <div class="auth-tabs">
+      <button type="button" class="auth-tab active" data-authtab="login">Log In</button>
+      <button type="button" class="auth-tab" data-authtab="signup">Sign Up</button>
     </div>
 
-    <div id="codeStep" hidden>
-      <form id="codeForm" autocomplete="off">
-        <label class="sr" for="authCode">Sign-in code</label>
-        <input id="authCode" inputmode="numeric" maxlength="10" placeholder="Code from your email" required>
-        <button type="submit" id="codeSubmit">Verify & sign in</button>
-      </form>
-      <p class="auth-note"><button type="button" id="backToEmail" class="linkish" style="background:none;font-size:13px">Use a different email</button></p>
+    <form id="loginForm" autocomplete="on">
+      <label class="sr" for="loginEmail">Email address</label>
+      <input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required>
+      <label class="sr" for="loginPassword">Password</label>
+      <input id="loginPassword" type="password" placeholder="Password" autocomplete="current-password" required>
+      <label class="auth-remember">
+        <input type="checkbox" id="rememberMe" checked>
+        Remember me on this device
+      </label>
+      <button type="submit" id="loginSubmit">Log In</button>
+    </form>
+
+    <form id="signupForm" autocomplete="off" hidden>
+      <label class="sr" for="signupEmail">Email address</label>
+      <input id="signupEmail" type="email" placeholder="you@example.com" autocomplete="email" required>
+      <label class="sr" for="signupPassword">Password</label>
+      <input id="signupPassword" type="password" placeholder="Create a password (6+ characters)" autocomplete="new-password" minlength="6" required>
+      <button type="submit" id="signupSubmit">Create Account</button>
+    </form>
+
+    <p class="auth-note">
+      <button type="button" id="toggleCodeLogin" class="linkish" style="background:none;font-size:13px">Prefer a one-time code by email instead?</button>
+    </p>
+
+    <div id="codeLoginBlock" hidden>
+      <div id="emailStep">
+        <form id="authForm" autocomplete="off">
+          <label class="sr" for="authEmail">Email address</label>
+          <input id="authEmail" type="email" placeholder="you@example.com" required>
+          <button type="submit" id="authSubmit">Send me a code</button>
+        </form>
+        <p class="auth-note">We'll email you a code — no password needed.</p>
+      </div>
+
+      <div id="codeStep" hidden>
+        <form id="codeForm" autocomplete="off">
+          <label class="sr" for="authCode">Sign-in code</label>
+          <input id="authCode" inputmode="numeric" maxlength="10" placeholder="Code from your email" required>
+          <button type="submit" id="codeSubmit">Verify & sign in</button>
+        </form>
+        <p class="auth-note"><button type="button" id="backToEmail" class="linkish" style="background:none;font-size:13px">Use a different email</button></p>
+      </div>
     </div>
 
     <p class="authmsg" id="authMsg"></p>
@@ -518,7 +559,18 @@ let ui = { view:"add", flipped:false, currentId:null, tick:0, undo:[], typedGues
    ============================================================ */
 const SUPABASE_URL = "https://zoaijkwlasouytwkbkqu.supabase.co";
 const SUPABASE_KEY = "sb_publishable_VhBZ9tVW5h9DNFMGgvF0PQ_5RsMh8Vg";
-const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+/** "Remember me" support: when checked, sessions persist normally (localStorage).
+ *  When unchecked, sessions live only in sessionStorage — gone once the
+ *  browser closes. The choice itself is remembered in localStorage so a
+ *  page reload still knows where to look. */
+function getRememberPref(){ return localStorage.getItem("vocario_remember") !== "false"; }
+function setRememberPref(v){ localStorage.setItem("vocario_remember", v ? "true" : "false"); }
+const rememberAwareStorage = {
+  getItem: (key) => (getRememberPref() ? localStorage : sessionStorage).getItem(key),
+  setItem: (key, value) => (getRememberPref() ? localStorage : sessionStorage).setItem(key, value),
+  removeItem: (key) => (getRememberPref() ? localStorage : sessionStorage).removeItem(key),
+};
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { storage: rememberAwareStorage } });
 
 function rowToCard(r){
   return {
@@ -578,6 +630,15 @@ function showAuthGate(){
   $("#emailStep").hidden = false;
   $("#authEmail").value = "";
   $("#authCode").value = "";
+  $("#loginEmail").value = "";
+  $("#loginPassword").value = "";
+  $("#signupEmail").value = "";
+  $("#signupPassword").value = "";
+  $$(".auth-tab").forEach(t => t.classList.toggle("active", t.dataset.authtab === "login"));
+  $("#loginForm").hidden = false;
+  $("#signupForm").hidden = true;
+  $("#codeLoginBlock").hidden = true;
+  $("#toggleCodeLogin").textContent = "Prefer a one-time code by email instead?";
   $("#authMsg").textContent = "";
 }
 async function onLoggedIn(session){
@@ -1484,6 +1545,50 @@ $("#googleBtn").addEventListener("click", async () => {
     provider: "google",
     options: { redirectTo: window.location.origin + window.location.pathname }
   });
+});
+
+/* ---------- log in / sign up tabs ---------- */
+$$(".auth-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    $$(".auth-tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    $("#loginForm").hidden = tab.dataset.authtab !== "login";
+    $("#signupForm").hidden = tab.dataset.authtab !== "signup";
+    $("#authMsg").textContent = "";
+  });
+});
+
+$("#toggleCodeLogin").addEventListener("click", () => {
+  const block = $("#codeLoginBlock");
+  block.hidden = !block.hidden;
+  $("#toggleCodeLogin").textContent = block.hidden
+    ? "Prefer a one-time code by email instead?"
+    : "Hide the one-time code option";
+});
+
+$("#loginForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const email = $("#loginEmail").value.trim();
+  const password = $("#loginPassword").value;
+  setRememberPref($("#rememberMe").checked);
+  const btn = $("#loginSubmit");
+  btn.disabled = true; btn.textContent = "Logging in…";
+  const { error } = await db.auth.signInWithPassword({ email, password });
+  btn.disabled = false; btn.textContent = "Log In";
+  $("#authMsg").textContent = error ? `Error: ${error.message}` : "";
+});
+
+$("#signupForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const email = $("#signupEmail").value.trim();
+  const password = $("#signupPassword").value;
+  setRememberPref(true); // fresh accounts default to remembered
+  const btn = $("#signupSubmit");
+  btn.disabled = true; btn.textContent = "Creating account…";
+  const { error } = await db.auth.signUp({ email, password });
+  btn.disabled = false; btn.textContent = "Create Account";
+  $("#authMsg").textContent = error ? `Error: ${error.message}` : "";
+  // On success, onAuthStateChange (wired elsewhere) signs them straight in.
 });
 
 let pendingAuthEmail = "";
