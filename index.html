@@ -775,7 +775,7 @@ const $  = (s,r=document)=>r.querySelector(s);
 const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
 const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const rx  = s => String(s).replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
-const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const uid = () => crypto.randomUUID();
 
 function todayStr(d=new Date()){
   return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
@@ -974,7 +974,7 @@ async function lookupWord(raw){
  *  rather than being allowed to hang the whole lookup. */
 async function lookupPrimary(w){
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 7000);
+  const timer = setTimeout(() => controller.abort(), 3000);
   let res;
   try{
     res = await fetch("https://api.dictionaryapi.dev/api/v2/entries/en/" + encodeURIComponent(w), { signal: controller.signal });
@@ -1416,6 +1416,7 @@ async function fileWords(input){
   if(!words.length) return;
   const out = $("#lookupOut"), btn = $("#lookupBtn");
   ui.busy = true; btn.disabled = true; btn.textContent = "…";
+  out.innerHTML = `<p class="hint">Looking up${words.length===1 ? " \u201c"+esc(words[0])+"\u201d" : ""}\u2026</p>`;
   const added = [], dupes = [], failed = [];
 
   for(let i=0;i<words.length;i++){
