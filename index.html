@@ -961,7 +961,28 @@ const POS = { noun:"n.", verb:"v.", adjective:"adj.", adverb:"adv.", pronoun:"pr
 async function lookupWord(raw){
   const w = raw.trim().toLowerCase().replace(/\s+/g," ");
   if(!w) throw new Error("empty");
-  const res = await fetch("https://api.dictionaryapi.dev/api/v2/entries/en/" + encodeURIComponent(w));
+  try{
+    return await lookupPrimary(w);
+  }catch(err){
+    if(err.message === "notfound") throw err; // a real "no such word" — trust it, don't fall back
+    return await lookupFallback(w); // primary dictionary is down or too slow
+  }
+}
+
+/** The main dictionary — richest data (audio, IPA, examples) when it's up,
+ *  but this free service has been unreliable, so it gets a hard timeout
+ *  rather than being allowed to hang the whole lookup. */
+async function lookupPrimary(w){
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 7000);
+  let res;
+  try{
+    res = await fetch("https://api.dictionaryapi.dev/api/v2/entries/en/" + encodeURIComponent(w), { signal: controller.signal });
+  }catch(e){
+    throw new Error("offline");
+  }finally{
+    clearTimeout(timer);
+  }
   if(res.status === 404) throw new Error("notfound");
   if(!res.ok) throw new Error("offline");
   const data = await res.json();
@@ -1003,6 +1024,36 @@ async function lookupWord(raw){
     }catch(e){}
   }
   return { word: head.word || w, ipa, audio, meanings };
+}
+
+const DATAMUSE_POS = { n:"n.", v:"v.", adj:"adj.", adv:"adv.", u:"" };
+/** Backup source when the main dictionary is down or too slow. Gives a
+ *  real definition — just no example sentence, IPA, or pronunciation audio. */
+async function lookupFallback(w){
+  const res = await fetch(`https://api.datamuse.com/words?sp=${encodeURIComponent(w)}&md=d&max=1`);
+  if(!res.ok) throw new Error("offline");
+  const data = await res.json();
+  const hit = data[0];
+  if(!hit || !hit.defs || !hit.defs.length) throw new Error("notfound");
+
+  const meanings = [];
+  for(const raw of hit.defs){
+    const [code, ...rest] = raw.split("\t");
+    const definition = rest.join("\t");
+    if(!definition) continue;
+    const pos = DATAMUSE_POS[code] ?? code;
+    if(meanings.some(m => m.pos === pos)) continue;
+    meanings.push({ pos, definition, example: "", synonyms: [] });
+    if(meanings.length >= 3) break;
+  }
+  if(!meanings.length) throw new Error("notfound");
+
+  try{
+    const r = await fetch("https://api.datamuse.com/words?max=4&rel_syn=" + encodeURIComponent(w));
+    if(r.ok) meanings[0].synonyms = (await r.json()).map(x => x.word).slice(0,4);
+  }catch(e){}
+
+  return { word: hit.word || w, ipa: "", audio: "", meanings };
 }
 
 function addCard(entry){
