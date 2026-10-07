@@ -10,6 +10,8 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://api.dictionaryapi.dev" crossorigin>
+<link rel="dns-prefetch" href="https://api.datamuse.com">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -958,30 +960,115 @@ function undo(){
 const POS = { noun:"n.", verb:"v.", adjective:"adj.", adverb:"adv.", pronoun:"pron.",
   preposition:"prep.", conjunction:"conj.", interjection:"interj.", determiner:"det.", exclamation:"excl." };
 
-async function lookupWord(raw){
-  const w = raw.trim().toLowerCase().replace(/\s+/g," ");
-  if(!w) throw new Error("empty");
+/* ------------------------------------------------------------
+   DICTIONARY SOURCES — to add or swap a dictionary:
+     1. write a function  async function lookupXxx(word, signal)  that
+        returns { word, ipa, audio, meanings:[{pos, definition, example, synonyms}] }
+        and throws Error("notfound") if it doesn't have the word
+        (anything else that goes wrong counts as "offline");
+     2. add one line to the list below.
+   Sources are tried top to bottom — the first one that has the word wins.
+   A word only shows "not found" when every source has said no.
+     timeout : ms to wait for this source before moving to the next
+     cache   : remember its answers on this device so repeats are instant
+                (leave false for thin/backup sources, so a better source
+                 gets another chance next time)
+   ------------------------------------------------------------ */
+const DICT_SOURCES = [
+  { name:"dictionaryapi.dev", timeout:1500, cache:true,  lookup: lookupPrimary  },
+  { name:"datamuse",          timeout:4000, cache:false, lookup: lookupFallback },
+];
+
+/* ---------- local memory of past lookups (makes repeat words instant) ---------- */
+const DICT_CACHE_KEY = "vocario.dictcache.v1";
+const DICT_CACHE_MAX = 300;                    // most words kept
+const DICT_CACHE_TTL = 30*24*60*60*1000;       // 30 days
+let _dictCache = null;
+function dictCacheLoad(){
+  if(_dictCache) return _dictCache;
+  try{ _dictCache = JSON.parse(localStorage.getItem(DICT_CACHE_KEY) || "{}") || {}; }
+  catch(e){ _dictCache = {}; }
+  return _dictCache;
+}
+function dictCacheGet(key){
+  const c = dictCacheLoad(), hit = c[key];
+  if(!hit) return null;
+  if(Date.now() - hit.t > DICT_CACHE_TTL){ delete c[key]; return null; }
+  return JSON.parse(JSON.stringify(hit.e)); // a copy, so cards never share objects with the cache
+}
+function dictCachePut(key, entry){
+  const c = dictCacheLoad();
+  c[key] = { t: Date.now(), e: { word:entry.word, ipa:entry.ipa, audio:entry.audio, meanings:entry.meanings } };
+  const keys = Object.keys(c);
+  if(keys.length > DICT_CACHE_MAX){
+    keys.sort((a,b) => c[a].t - c[b].t).slice(0, keys.length - DICT_CACHE_MAX).forEach(k => delete c[k]);
+  }
+  try{ localStorage.setItem(DICT_CACHE_KEY, JSON.stringify(c)); }catch(e){ /* storage full — skip caching */ }
+}
+
+/** Run one source with its own time limit. */
+async function runSource(src, w){
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), src.timeout);
   try{
-    return await lookupPrimary(w);
-  }catch(err){
-    if(err.message === "notfound") throw err; // a real "no such word" — trust it, don't fall back
-    return await lookupFallback(w); // primary dictionary is down or too slow
+    return await src.lookup(w, controller.signal);
+  }catch(e){
+    throw new Error(e && e.message === "notfound" ? "notfound" : "offline");
+  }finally{
+    clearTimeout(timer);
   }
 }
 
-/** The main dictionary — richest data (audio, IPA, examples) when it's up,
- *  but this free service has been unreliable, so it gets a hard timeout
- *  rather than being allowed to hang the whole lookup. */
-async function lookupPrimary(w){
+async function lookupWord(raw){
+  const w = raw.trim().toLowerCase().replace(/\s+/g," ");
+  if(!w) throw new Error("empty");
+
+  const cached = dictCacheGet(w);
+  if(cached){ cached._key = w; cached._cache = true; return cached; }
+
+  let sawNotFound = false;
+  for(const src of DICT_SOURCES){
+    try{
+      const entry = await runSource(src, w);
+      entry._key = w; entry._cache = !!src.cache;
+      if(src.cache) dictCachePut(w, entry);
+      return entry;
+    }catch(err){
+      if(err.message === "notfound") sawNotFound = true; // this one doesn't have it — try the next
+    }
+  }
+  throw new Error(sawNotFound ? "notfound" : "offline");
+}
+
+/** Synonyms come from Datamuse in a separate request. They're fetched AFTER the
+ *  card is filed so they never hold up the definition. */
+async function fetchSynonyms(w){
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 3000);
+  try{
+    const r = await fetch("https://api.datamuse.com/words?max=4&rel_syn=" + encodeURIComponent(w), { signal: controller.signal });
+    if(!r.ok) return [];
+    return (await r.json()).map(x => x.word).slice(0,4);
+  }catch(e){ return []; }
+  finally{ clearTimeout(timer); }
+}
+async function fillSynonyms(card, entry){
+  const m = card.meanings && card.meanings[0];
+  if(!m || (m.synonyms && m.synonyms.length)) return;
+  const syn = await fetchSynonyms(card.word);
+  if(!syn.length || !state.cards.includes(card)) return; // none found, or the card was deleted meanwhile
+  m.synonyms = syn;
+  save(); pushCard(card);
+  if(entry && entry._cache && entry._key) dictCachePut(entry._key, entry); // keep the cached copy complete too
+}
+
+/** The main dictionary — richest data (audio, IPA, examples). */
+async function lookupPrimary(w, signal){
   let res;
   try{
-    res = await fetch("https://api.dictionaryapi.dev/api/v2/entries/en/" + encodeURIComponent(w), { signal: controller.signal });
+    res = await fetch("https://api.dictionaryapi.dev/api/v2/entries/en/" + encodeURIComponent(w), { signal });
   }catch(e){
     throw new Error("offline");
-  }finally{
-    clearTimeout(timer);
   }
   if(res.status === 404) throw new Error("notfound");
   if(!res.ok) throw new Error("offline");
@@ -1017,23 +1104,19 @@ async function lookupPrimary(w){
   }
   if(!meanings.length) throw new Error("notfound");
 
-  if(!meanings[0].synonyms.length){
-    try{
-      const r = await fetch("https://api.datamuse.com/words?max=4&rel_syn=" + encodeURIComponent(w));
-      if(r.ok) meanings[0].synonyms = (await r.json()).map(x => x.word).slice(0,4);
-    }catch(e){}
-  }
   return { word: head.word || w, ipa, audio, meanings };
 }
 
 const DATAMUSE_POS = { n:"n.", v:"v.", adj:"adj.", adv:"adv.", u:"" };
-/** Backup source when the main dictionary is down or too slow. Gives a
- *  real definition — just no example sentence, IPA, or pronunciation audio. */
-async function lookupFallback(w){
-  const res = await fetch(`https://api.datamuse.com/words?sp=${encodeURIComponent(w)}&md=d&max=1`);
+/** Backup source when the main dictionary is down, too slow, or doesn't have the
+ *  word. Gives a real definition — just no example sentence, IPA, or audio.
+ *  Datamuse matches by similar spelling, so only an EXACT match counts —
+ *  otherwise a typo would quietly file some other word. */
+async function lookupFallback(w, signal){
+  const res = await fetch(`https://api.datamuse.com/words?sp=${encodeURIComponent(w)}&md=d&max=5`, { signal });
   if(!res.ok) throw new Error("offline");
   const data = await res.json();
-  const hit = data[0];
+  const hit = data.find(x => (x.word || "").toLowerCase() === w);
   if(!hit || !hit.defs || !hit.defs.length) throw new Error("notfound");
 
   const meanings = [];
@@ -1047,11 +1130,6 @@ async function lookupFallback(w){
     if(meanings.length >= 3) break;
   }
   if(!meanings.length) throw new Error("notfound");
-
-  try{
-    const r = await fetch("https://api.datamuse.com/words?max=4&rel_syn=" + encodeURIComponent(w));
-    if(r.ok) meanings[0].synonyms = (await r.json()).map(x => x.word).slice(0,4);
-  }catch(e){}
 
   return { word: hit.word || w, ipa: "", audio: "", meanings };
 }
@@ -1425,6 +1503,7 @@ async function fileWords(input){
       const entry = await lookupWord(words[i]);
       const r = addCard(entry);
       (r.dup ? dupes : added).push(r.card);
+      if(!r.dup) fillSynonyms(r.card, entry); // background — doesn't hold up the card
     }catch(err){
       failed.push({ w: words[i], why: err.message });
     }
