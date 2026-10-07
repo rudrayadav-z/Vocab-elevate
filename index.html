@@ -361,6 +361,16 @@ label.opt .note{display:block;font-size:13px;color:var(--ink-2);font-style:itali
   *{animation-duration:.001ms !important;transition-duration:.001ms !important}
   .card3d{transition:none}
 }
+
+.unmodal{position:fixed;inset:0;background:rgba(15,31,61,.55);display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px}
+.unmodal[hidden]{display:none}
+.unbox{background:var(--card);border:3px solid var(--edge);box-shadow:5px 5px 0 var(--edge);max-width:380px;width:100%;padding:20px}
+.unbox h3{font-family:var(--pixel);font-size:13px;margin:0 0 8px;color:var(--ink)}
+.unbox p{font-size:16px;color:var(--ink-2);margin:0 0 10px}
+.unbox input{width:100%;padding:10px;border:3px solid var(--edge);font-size:18px;font-family:var(--body);margin-bottom:6px;background:#fff;color:var(--ink)}
+.unbox .unmsg{min-height:20px;font-size:15px;color:var(--orange-dk);margin-bottom:8px}
+.unbox .unhint{font-size:14px;color:var(--ink-2)}
+.unbox .btnrow{display:flex;gap:8px;flex-wrap:wrap}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
@@ -415,6 +425,8 @@ label.opt .note{display:block;font-size:13px;color:var(--ink-2);font-style:itali
     <form id="signupForm" autocomplete="off" hidden>
       <label class="sr" for="signupEmail">Email address</label>
       <input id="signupEmail" type="email" placeholder="you@example.com" autocomplete="email" required>
+      <label class="sr" for="signupUsername">Username</label>
+      <input id="signupUsername" type="text" placeholder="Pick a username (3–15 letters, numbers, _)" autocomplete="off" maxlength="15" pattern="[A-Za-z0-9_]{3,15}" required>
       <label class="sr" for="signupPassword">Password</label>
       <input id="signupPassword" type="password" placeholder="Create a password (6+ characters)" autocomplete="new-password" minlength="6" required>
       <button type="submit" id="signupSubmit">Create Account</button>
@@ -530,6 +542,19 @@ label.opt .note{display:block;font-size:13px;color:var(--ink-2);font-style:itali
 </div>
 
 <div id="ptpop"></div>
+<div class="unmodal" id="unModal" hidden>
+  <div class="unbox" role="dialog" aria-modal="true" aria-labelledby="unTitle">
+    <h3 id="unTitle">Pick a username</h3>
+    <p id="unLede">This is the name other people see on the leaderboard. Your email stays private.</p>
+    <input id="unInput" maxlength="15" autocomplete="off" placeholder="e.g. word_wizard">
+    <div class="unhint">3–15 characters: letters, numbers and _ only. You can change it once every 7 days.</div>
+    <div class="unmsg" id="unMsg"></div>
+    <div class="btnrow">
+      <button class="btn primary" id="unSave">Save username</button>
+      <button class="btn ghost" id="unCancel">Not now</button>
+    </div>
+  </div>
+</div>
 <div id="toast" role="status" aria-live="polite"><span class="msg"></span></div>
 
 <script>
@@ -636,6 +661,7 @@ function showAuthGate(){
   $("#loginPassword").value = "";
   $("#signupEmail").value = "";
   $("#signupPassword").value = "";
+  $("#signupUsername").value = "";
   $$(".auth-tab").forEach(t => t.classList.toggle("active", t.dataset.authtab === "login"));
   $("#loginForm").hidden = false;
   $("#signupForm").hidden = true;
@@ -660,6 +686,7 @@ async function onLoggedIn(session){
   $("#app").hidden = false;
   save(); renderSuggest(); render();
   go(state.cards.length && queue().total ? "study" : "add");
+  if(!state.usernameChosen) openUsernameModal({ first:true, prefill: state.usernamePrefill || "" });
 }
 function onLoggedOut(){
   state.cards = [];
@@ -672,13 +699,93 @@ async function signOut(){ await db.auth.signOut(); }
 /** Creates a public display name the first time someone signs in. Never
  *  exposes their email — just picks a name from the part before the @. */
 async function ensureProfile(user){
-  const { data } = await db.from("profiles").select("display_name, is_premium").eq("id", user.id).maybeSingle();
-  if(data){ state.displayName = data.display_name; state.isPremium = !!data.is_premium; return; }
-  const name = (user.email || "player").split("@")[0].slice(0, 24);
-  const { error } = await db.from("profiles").insert({ id: user.id, display_name: name });
-  state.displayName = error ? name : name; // insert failing shouldn't block sign-in
-  state.isPremium = false;
+  state.userId = user.id;
+  let { data } = await db.from("profiles").select("display_name, is_premium, username_changed_at").eq("id", user.id).maybeSingle();
+  if(!data){
+    const name = (user.email || "player").split("@")[0].slice(0, 24);
+    await db.from("profiles").insert({ id: user.id, display_name: name }); // database tidies up clashes
+    const r = await db.from("profiles").select("display_name, is_premium, username_changed_at").eq("id", user.id).maybeSingle();
+    data = r.data || { display_name: name, is_premium: false, username_changed_at: null };
+  }
+  state.displayName = data.display_name;
+  state.isPremium = !!data.is_premium;
+  state.usernameChangedAt = data.username_changed_at || null;
+  state.usernameChosen = !!data.username_changed_at;
+
+  // A username typed on the sign-up form is applied on first login.
+  let pending = "";
+  try{ pending = localStorage.getItem("vocario.pendingUsername") || ""; }catch(e){}
+  if(pending){
+    try{ localStorage.removeItem("vocario.pendingUsername"); }catch(e){}
+    if(!state.usernameChosen){
+      const r = await setUsername(pending);
+      if(!r.ok) state.usernamePrefill = pending;
+    }
+  }
 }
+
+/* ---------- usernames ---------- */
+function usernameError(err){
+  const m = (err && err.message) || "";
+  if(m.startsWith("too_soon")){
+    const when = new Date(m.split(":").slice(1).join(":"));
+    return "You can change it again on " + (isNaN(when) ? "a later date" : when.toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"})) + ".";
+  }
+  if(m.includes("bad_format")) return "Use 3–15 letters, numbers or underscores only.";
+  if(m.includes("taken")) return "That username is already taken — try another.";
+  if(m.includes("blocked")) return "That name isn't allowed. Please pick another.";
+  if(m.includes("not_signed_in")) return "Please sign in again.";
+  return "Couldn't save the username — try again in a moment.";
+}
+async function setUsername(name){
+  const { data, error } = await db.rpc("set_username", { new_name: name });
+  if(error) return { ok:false, message: usernameError(error) };
+  state.displayName = data || name;
+  state.usernameChosen = true;
+  state.usernameChangedAt = new Date().toISOString();
+  return { ok:true };
+}
+function nextUsernameChange(){
+  if(!state.usernameChangedAt) return null;
+  const d = new Date(new Date(state.usernameChangedAt).getTime() + 7*24*3600*1000);
+  return d > new Date() ? d : null;
+}
+function openUsernameModal(opts){
+  opts = opts || {};
+  const first = !!opts.first;
+  $("#unTitle").textContent = first ? "Pick a username" : "Change username";
+  $("#unLede").textContent = first
+    ? "This is the name other people see on the leaderboard. Your email stays private."
+    : "Your current username is " + (state.displayName || "") + ".";
+  $("#unCancel").textContent = first ? "Not now" : "Cancel";
+  $("#unInput").value = opts.prefill || "";
+  $("#unMsg").textContent = "";
+  $("#unModal").hidden = false;
+  setTimeout(() => $("#unInput").focus(), 0);
+}
+function closeUsernameModal(){ $("#unModal").hidden = true; }
+async function submitUsername(){
+  const v = $("#unInput").value.trim();
+  if(!/^[A-Za-z0-9_]{3,15}$/.test(v)){ $("#unMsg").textContent = "Use 3–15 letters, numbers or underscores only."; return; }
+  const btn = $("#unSave"); btn.disabled = true; btn.textContent = "Saving…";
+  const r = await setUsername(v);
+  btn.disabled = false; btn.textContent = "Save username";
+  if(!r.ok){ $("#unMsg").textContent = r.message; return; }
+  closeUsernameModal();
+  toast("Username saved: " + state.displayName);
+  render();
+}
+document.addEventListener("click", e => {
+  if(e.target.id === "unSave") submitUsername();
+  if(e.target.id === "unCancel") closeUsernameModal();
+  if(e.target.id === "unModal") closeUsernameModal();
+});
+document.addEventListener("keydown", e => {
+  if(!$("#unModal").hidden){
+    if(e.key === "Enter" && e.target.id === "unInput") submitUsername();
+    if(e.key === "Escape") closeUsernameModal();
+  }
+});
 async function logPoints(amount){
   try{ await db.from("points_log").insert({ amount }); }catch(e){ /* leaderboard update can wait */ }
 }
@@ -1405,6 +1512,10 @@ function renderDesk(){
       <span>${esc(state.displayName || "")} · ${esc(state.userEmail || "")}</span>
       <button data-act="signout">Sign out</button>
     </div>
+    <div class="acctrow">
+      <span>${state.usernameChosen ? "Username: " + esc(state.displayName || "") : "You haven't picked a username yet"}</span>
+      <button data-act="username">${state.usernameChosen ? "Change" : "Pick one"}</button>
+    </div>
 
     ${state.isPremium ? `
       <div class="acctrow" style="background:var(--yellow);color:var(--ink);border-color:var(--edge)">
@@ -1471,7 +1582,7 @@ async function renderBoard(){
     el.innerHTML += `<p class="hint" style="color:var(--orange-dk)">Couldn't load the leaderboard right now.</p>`;
     return;
   }
-  const rows = (data || []).filter(r => r.points > 0 || r.display_name === state.displayName);
+  const rows = (data || []).filter(r => r.points > 0 || (r.user_id ? r.user_id === state.userId : r.display_name === state.displayName));
   const medals = ["🥇","🥈","🥉"];
 
   el.innerHTML = `
@@ -1480,10 +1591,10 @@ async function renderBoard(){
     <p class="lede">Everyone's points earned since Monday. Resets fresh every week.</p>
     <div class="lbrows">
       ${rows.length ? rows.map((r,i) => `
-        <div class="lbrow ${r.display_name === state.displayName ? "me" : ""}">
+        <div class="lbrow ${(r.user_id ? r.user_id === state.userId : r.display_name === state.displayName) ? "me" : ""}">
           <span class="rank">${i < 3 ? "" : "#" + (i+1)}</span>
           <span class="medal">${medals[i] || ""}</span>
-          <span class="name">${esc(r.display_name)}${r.display_name === state.displayName ? " (you)" : ""}</span>
+          <span class="name">${esc(r.display_name)}${(r.user_id ? r.user_id === state.userId : r.display_name === state.displayName) ? " (you)" : ""}</span>
           <span class="pts">${r.points} pts</span>
         </div>`).join("")
       : `<div class="empty"><h3>Nobody's scored yet</h3><p>Be the first — file a word or finish a review.</p></div>`}
@@ -1698,6 +1809,12 @@ document.addEventListener("click", e => {
     }
     return;
   }
+  if(act === "username"){
+    const wait = nextUsernameChange();
+    if(wait){ toast("You can change your username again on " + wait.toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"}) + "."); return; }
+    openUsernameModal({ first: !state.usernameChosen });
+    return;
+  }
   if(act === "signout"){
     if(confirm("Sign out of Vocario?")) signOut();
     return;
@@ -1764,11 +1881,15 @@ $("#signupForm").addEventListener("submit", async e => {
   e.preventDefault();
   const email = $("#signupEmail").value.trim();
   const password = $("#signupPassword").value;
+  const username = $("#signupUsername").value.trim();
+  if(!/^[A-Za-z0-9_]{3,15}$/.test(username)){ $("#authMsg").textContent = "Username: 3–15 letters, numbers or underscores only."; return; }
+  try{ localStorage.setItem("vocario.pendingUsername", username); }catch(e){}
   setRememberPref(true); // fresh accounts default to remembered
   const btn = $("#signupSubmit");
   btn.disabled = true; btn.textContent = "Creating account…";
   const { error } = await db.auth.signUp({ email, password });
   btn.disabled = false; btn.textContent = "Create Account";
+  if(error){ try{ localStorage.removeItem("vocario.pendingUsername"); }catch(e){} }
   $("#authMsg").textContent = error ? `Error: ${error.message}` : "";
   // On success, onAuthStateChange (wired elsewhere) signs them straight in.
 });
