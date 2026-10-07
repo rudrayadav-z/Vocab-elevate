@@ -10,8 +10,8 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://api.dictionaryapi.dev" crossorigin>
-<link rel="dns-prefetch" href="https://api.datamuse.com">
+<link rel="preconnect" href="https://api.datamuse.com" crossorigin>
+<link rel="preconnect" href="https://en.wiktionary.org" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -975,8 +975,10 @@ const POS = { noun:"n.", verb:"v.", adjective:"adj.", adverb:"adv.", pronoun:"pr
                  gets another chance next time)
    ------------------------------------------------------------ */
 const DICT_SOURCES = [
-  { name:"dictionaryapi.dev", timeout:1500, cache:true,  lookup: lookupPrimary  },
-  { name:"datamuse",          timeout:4000, cache:false, lookup: lookupFallback },
+  { name:"datamuse",   timeout:2500, cache:true, lookup: lookupDatamuse   },
+  { name:"wiktionary", timeout:4000, cache:true, lookup: lookupWiktionary },
+  // dictionaryapi.dev was dropped (it kept going down). To bring it back, add:
+  // { name:"dictionaryapi.dev", timeout:1500, cache:true, lookup: lookupDictionaryApi },
 ];
 
 /* ---------- local memory of past lookups (makes repeat words instant) ---------- */
@@ -1063,7 +1065,7 @@ async function fillSynonyms(card, entry){
 }
 
 /** The main dictionary — richest data (audio, IPA, examples). */
-async function lookupPrimary(w, signal){
+async function lookupDictionaryApi(w, signal){
   let res;
   try{
     res = await fetch("https://api.dictionaryapi.dev/api/v2/entries/en/" + encodeURIComponent(w), { signal });
@@ -1108,11 +1110,11 @@ async function lookupPrimary(w, signal){
 }
 
 const DATAMUSE_POS = { n:"n.", v:"v.", adj:"adj.", adv:"adv.", u:"" };
-/** Backup source when the main dictionary is down, too slow, or doesn't have the
- *  word. Gives a real definition — just no example sentence, IPA, or audio.
+/** First source — very quick. Gives a short definition per part of speech, with
+ *  no example sentence, IPA, or audio.
  *  Datamuse matches by similar spelling, so only an EXACT match counts —
  *  otherwise a typo would quietly file some other word. */
-async function lookupFallback(w, signal){
+async function lookupDatamuse(w, signal){
   const res = await fetch(`https://api.datamuse.com/words?sp=${encodeURIComponent(w)}&md=d&max=5`, { signal });
   if(!res.ok) throw new Error("offline");
   const data = await res.json();
@@ -1132,6 +1134,55 @@ async function lookupFallback(w, signal){
   if(!meanings.length) throw new Error("notfound");
 
   return { word: hit.word || w, ipa: "", audio: "", meanings };
+}
+
+const WIKT_POS = { noun:"n.", verb:"v.", adjective:"adj.", adverb:"adv.", pronoun:"pron.",
+  preposition:"prep.", conjunction:"conj.", interjection:"interj.", determiner:"det.",
+  article:"art.", numeral:"num.", particle:"part.", proverb:"proverb", phrase:"phrase", idiom:"idiom" };
+const HTML_ENTITIES = { "&amp;":"&", "&lt;":"<", "&gt;":">", "&quot;":"\"", "&#39;":"'", "&nbsp;":" " };
+/** Wiktionary hands back definitions as little bits of HTML (links, labels).
+ *  Strip them to plain text — the app escapes text again when it draws it. */
+function wiktText(html){
+  return String(html || "")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&(amp|lt|gt|quot|nbsp|#39);/g, m => HTML_ENTITIES[m] || m)
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** Second source — Wiktionary. Slower than Datamuse but knows many more words
+ *  (rarer words, modern slang) and often has an example sentence. */
+async function lookupWiktionary(w, signal){
+  const res = await fetch("https://en.wiktionary.org/api/rest_v1/page/definition/" + encodeURIComponent(w), { signal });
+  if(res.status === 404) throw new Error("notfound");
+  if(!res.ok) throw new Error("offline");
+  const data = await res.json();
+  const groups = (data && data.en) || [];   // English entries only
+  if(!groups.length) throw new Error("notfound");
+
+  const meanings = [];
+  for(const g of groups){
+    const pos = WIKT_POS[(g.partOfSpeech || "").toLowerCase()] || (g.partOfSpeech || "").toLowerCase();
+    if(meanings.some(m => m.pos === pos)) continue;
+    const defs = (g.definitions || [])
+      .map(d => ({
+        text: wiktText(d.definition),
+        eg: wiktText((d.parsedExamples && d.parsedExamples[0] && d.parsedExamples[0].example) || (d.examples && d.examples[0]) || "")
+      }))
+      .filter(d => d.text);
+    const d = defs.find(x => x.eg) || defs[0];
+    if(!d) continue;
+    meanings.push({
+      pos,
+      definition: d.text.length > 300 ? d.text.slice(0, 297) + "…" : d.text,
+      example: d.eg.length > 200 ? "" : d.eg,
+      synonyms: []
+    });
+    if(meanings.length >= 3) break;
+  }
+  if(!meanings.length) throw new Error("notfound");
+
+  return { word: w, ipa: "", audio: "", meanings };
 }
 
 function addCard(entry){
