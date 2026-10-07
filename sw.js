@@ -1,5 +1,5 @@
 /* Offline shell. Reviews work with no connection; lookups need one. */
-const CACHE = "vocario-v1";
+const CACHE = "vocario-v2";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg"];
 
 self.addEventListener("install", e => {
@@ -12,7 +12,7 @@ self.addEventListener("fetch", e => {
   const url = new URL(e.request.url);
   if(e.request.method !== "GET") return;
   // Never cache dictionary responses.
-  if(/dictionaryapi\.dev|datamuse\.com/.test(url.hostname)) return;
+  if(/dictionaryapi\.dev|datamuse\.com|wiktionary\.org/.test(url.hostname)) return;
 
   if(e.request.mode === "navigate"){
     e.respondWith(fetch(e.request).catch(() => caches.match("./index.html")));
