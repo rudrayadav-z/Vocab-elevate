@@ -373,6 +373,283 @@ label.opt .note{display:block;font-size:13px;color:var(--ink-2);font-style:itali
 .unbox .btnrow{display:flex;gap:8px;flex-wrap:wrap}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+/* ============================================================
+   Vocario share-card — turns a word into a Strava-style story card.
+   Used by the website (inlined into index.html) and the Chrome
+   extension (share.html). No libraries, no network calls.
+
+   VocarioShare.open(data)            → full-screen popup (website)
+   VocarioShare.mount(el, data)       → draws the same UI inside el (extension page)
+   data = { word, pos, definition, username }   (username optional)
+   ============================================================ */
+(function(){
+  "use strict";
+  const INK = "#0f1f3d", INK2 = "#5c6c8c", CARD = "#fffaf0", BLUE = "#3fc1f0",
+        PURPLE = "#7c5cf0", ORANGE = "#ff8c42";
+  const PIXEL = '"Press Start 2P", ui-monospace, monospace';
+  const BODY  = '"VT323", ui-monospace, monospace';
+  const W = 1080, H = 1920, CW = 900, PADX = 60;
+
+  /* ---------- drawing ---------- */
+  function wrap(ctx, text, maxW){
+    const words = String(text || "").replace(/\s+/g, " ").trim().split(" ");
+    const lines = []; let line = "";
+    for(const w of words){
+      const t = line ? line + " " + w : w;
+      if(ctx.measureText(t).width <= maxW || !line) line = t;
+      else { lines.push(line); line = w; }
+    }
+    if(line) lines.push(line);
+    return lines;
+  }
+  function ellipsize(ctx, line, maxW){
+    while(line.length > 1 && ctx.measureText(line + "…").width > maxW) line = line.slice(0, -1);
+    return line.replace(/[\s.,;:]+$/, "") + "…";
+  }
+
+  /** Works out all the text positions for the card; returns what's needed to paint it. */
+  function layout(ctx, d){
+    const textW = CW - PADX * 2;
+    const word = String(d.word || "").trim();
+    // word: biggest pixel size that fits on one line
+    let ws = 76;
+    ctx.font = `${ws}px ${PIXEL}`;
+    while(ws > 26 && ctx.measureText(word).width > textW){ ws -= 2; ctx.font = `${ws}px ${PIXEL}`; }
+    // definition: shrink a little for long text, cap the number of lines
+    let ds = 58, lines;
+    for(;;){
+      ctx.font = `${ds}px ${BODY}`;
+      lines = wrap(ctx, d.definition, textW);
+      if(lines.length <= 6 || ds <= 44) break;
+      ds -= 4;
+    }
+    const MAXL = 7;
+    if(lines.length > MAXL){
+      lines = lines.slice(0, MAXL);
+      lines[MAXL - 1] = ellipsize(ctx, lines[MAXL - 1], textW);
+    }
+    const lineH = Math.round(ds * 1.1);
+    const hasPos = !!(d.pos && String(d.pos).trim());
+    const y = {};
+    y.bar = 0;                       // accent bar height 28
+    y.pos = 28 + 56;                 // pill top
+    y.word = y.pos + (hasPos ? 58 + 56 : 20) + ws;   // baseline of word
+    y.def = y.word + 70 + ds * 0.8;                  // baseline of first def line
+    y.rule = y.def + (lines.length - 1) * lineH + 52;
+    y.foot = y.rule + 40 + 34;       // baseline of footer
+    const cardH = Math.ceil(y.foot + 52);
+    return { word, ws, ds, lines, lineH, hasPos, y, cardH, textW };
+  }
+
+  function paintCard(ctx, ox, oy, d, L){
+    const { y } = L;
+    // hard offset shadow (pixel style)
+    ctx.fillStyle = INK; ctx.fillRect(ox + 16, oy + 16, CW, L.cardH);
+    // body + outline
+    ctx.fillStyle = CARD; ctx.fillRect(ox, oy, CW, L.cardH);
+    ctx.fillStyle = BLUE; ctx.fillRect(ox, oy, CW, 28);
+    ctx.lineWidth = 8; ctx.strokeStyle = INK; ctx.strokeRect(ox + 4, oy + 4, CW - 8, L.cardH - 8);
+    ctx.fillStyle = INK; ctx.fillRect(ox, oy + 28, CW, 6);
+
+    ctx.textBaseline = "alphabetic"; ctx.textAlign = "left";
+    const tx = ox + PADX;
+    if(L.hasPos){
+      const pos = String(d.pos).toUpperCase();
+      ctx.font = `26px ${PIXEL}`;
+      const pw = ctx.measureText(pos).width + 32;
+      ctx.fillStyle = PURPLE; ctx.fillRect(tx, oy + y.pos, pw, 58);
+      ctx.fillStyle = "#fff"; ctx.fillText(pos, tx + 16, oy + y.pos + 40);
+    }
+    ctx.fillStyle = INK; ctx.font = `${L.ws}px ${PIXEL}`;
+    ctx.fillText(L.word, tx, oy + y.word);
+
+    ctx.fillStyle = INK; ctx.font = `${L.ds}px ${BODY}`;
+    L.lines.forEach((ln, i) => ctx.fillText(ln, tx, oy + y.def + i * L.lineH));
+
+    // dashed rule
+    ctx.fillStyle = INK2;
+    for(let x = tx; x < tx + L.textW; x += 24) ctx.fillRect(x, oy + y.rule, 12, 4);
+
+    // footer: wordmark left, username right
+    ctx.font = `30px ${PIXEL}`;
+    ctx.fillStyle = INK; ctx.fillText("Voc", tx, oy + y.foot);
+    const vw = ctx.measureText("Voc").width;
+    ctx.fillStyle = ORANGE; ctx.fillText("ario", tx + vw, oy + y.foot);
+    if(d.username){
+      ctx.font = `46px ${BODY}`; ctx.fillStyle = INK2; ctx.textAlign = "right";
+      ctx.fillText("@" + d.username, ox + CW - PADX, oy + y.foot + 2);
+      ctx.textAlign = "left";
+    }
+  }
+
+  function coverFit(ctx, img, w, h){
+    const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+    const s = Math.max(w / iw, h / ih);
+    const dw = iw * s, dh = ih * s;
+    ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
+  }
+
+  /** mode: "photo" (1080×1920 story) or "sticker" (card only, see-through background). */
+  function render(canvas, d, opts){
+    opts = opts || {};
+    const ctx = canvas.getContext("2d");
+    // measure on a scratch canvas so the real one can be sized first
+    const m = document.createElement("canvas").getContext("2d");
+    const L = layout(m, d);
+    if(opts.mode === "sticker"){
+      canvas.width = CW + 40 + 16; canvas.height = L.cardH + 40 + 16;   // room for the shadow
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      paintCard(ctx, 20, 20, d, L);
+      return;
+    }
+    canvas.width = W; canvas.height = H;
+    if(opts.image){
+      coverFit(ctx, opts.image, W, H);
+      const g = ctx.createLinearGradient(0, 0, 0, H);
+      g.addColorStop(0, "rgba(0,0,0,.18)"); g.addColorStop(.5, "rgba(0,0,0,.10)"); g.addColorStop(1, "rgba(0,0,0,.38)");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    } else {
+      const g = ctx.createLinearGradient(0, 0, 0, H);
+      g.addColorStop(0, "#9ad8f7"); g.addColorStop(1, "#3fc1f0");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "rgba(255,255,255,.18)";            // soft pixel clouds
+      [[120,300,300,60],[640,180,260,50],[260,1560,340,60],[700,1700,240,50]].forEach(r => ctx.fillRect(r[0], r[1], r[2], r[3]));
+    }
+    // sit a little below centre, clear of Instagram's top and bottom bars
+    const top = Math.round((H - L.cardH) / 2) + 90;
+    paintCard(ctx, (W - CW) / 2 - 8, top, d, L);
+  }
+
+  async function loadFonts(){
+    try{
+      if(document.fonts && document.fonts.load){
+        await Promise.race([
+          Promise.all([document.fonts.load(`40px "Press Start 2P"`), document.fonts.load(`40px "VT323"`)]),
+          new Promise(r => setTimeout(r, 2500))
+        ]);
+      }
+    }catch(e){}
+  }
+
+  /* ---------- UI ---------- */
+  const CSS = `
+  .vsh-wrap{font-family:${BODY};color:${INK};}
+  .vsh-box{background:${CARD};border:3px solid ${INK};box-shadow:5px 5px 0 ${INK};padding:16px;max-width:420px;width:100%;margin:0 auto}
+  .vsh-box h3{font-family:${PIXEL};font-size:12px;margin:0 0 10px;color:${INK}}
+  .vsh-tabs{display:flex;gap:6px;margin-bottom:10px}
+  .vsh-tab{flex:1;font-family:${PIXEL};font-size:8px;padding:9px 4px;border:3px solid ${INK};background:#fff;color:${INK};cursor:pointer}
+  .vsh-tab.on{background:#ffcf3f}
+  .vsh-prev{display:flex;justify-content:center;background:#e4eefa;border:3px solid ${INK};padding:8px;margin-bottom:10px;
+    background-image:linear-gradient(45deg,#d5e2f3 25%,transparent 25%,transparent 75%,#d5e2f3 75%),linear-gradient(45deg,#d5e2f3 25%,transparent 25%,transparent 75%,#d5e2f3 75%);
+    background-size:16px 16px;background-position:0 0,8px 8px}
+  .vsh-prev canvas{max-width:100%;max-height:52vh;width:auto;height:auto;display:block}
+  .vsh-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+  .vsh-btn{flex:1;min-width:120px;font-family:${PIXEL};font-size:9px;padding:11px 8px;border:3px solid ${INK};background:#fff;color:${INK};cursor:pointer;box-shadow:3px 3px 0 ${INK}}
+  .vsh-btn.pri{background:#ff4d5e;color:#fff}
+  .vsh-btn:active{transform:translate(3px,3px);box-shadow:none}
+  .vsh-note{font-size:15px;color:${INK2};margin:2px 0 0;line-height:1.25}
+  .vsh-ov{position:fixed;inset:0;background:rgba(15,31,61,.6);z-index:10000;display:flex;align-items:center;justify-content:center;padding:12px;overflow:auto}
+  `;
+  function injectCss(){
+    if(document.getElementById("vsh-css")) return;
+    const s = document.createElement("style"); s.id = "vsh-css"; s.textContent = CSS; document.head.appendChild(s);
+  }
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+  async function mount(el, data, hooks){
+    injectCss();
+    data = Object.assign({ word:"", pos:"", definition:"", username:"" }, data || {});
+    let mode = "photo", image = null, objUrl = null;
+    el.classList.add("vsh-wrap");
+    el.innerHTML = `
+      <div class="vsh-box">
+        <h3>Share “${esc(data.word)}”</h3>
+        <div class="vsh-tabs">
+          <button class="vsh-tab on" data-m="photo">ON A PHOTO</button>
+          <button class="vsh-tab" data-m="sticker">TRANSPARENT STICKER</button>
+        </div>
+        <div class="vsh-prev"><canvas class="vsh-canvas"></canvas></div>
+        <div class="vsh-row vsh-photoonly">
+          <button class="vsh-btn" data-a="photo">CHOOSE A PHOTO</button>
+          <input type="file" accept="image/*" class="vsh-file" hidden>
+        </div>
+        <div class="vsh-row">
+          <button class="vsh-btn pri" data-a="share">SHARE</button>
+          <button class="vsh-btn" data-a="save">DOWNLOAD</button>
+          ${hooks && hooks.onClose ? `<button class="vsh-btn" data-a="close">CLOSE</button>` : ""}
+        </div>
+        <p class="vsh-note vsh-hint"></p>
+      </div>`;
+    const canvas = el.querySelector(".vsh-canvas"), file = el.querySelector(".vsh-file"), hint = el.querySelector(".vsh-hint");
+    const setHint = () => hint.textContent = mode === "sticker"
+      ? "Download the sticker, then in Instagram Stories tap the sticker icon → photo icon to add it on top of any photo or video."
+      : "Pick a photo from your gallery (or keep the blue background), then tap Share and choose Instagram.";
+    await loadFonts();
+    const draw = () => {
+      el.querySelector(".vsh-photoonly").style.display = mode === "photo" ? "" : "none";
+      render(canvas, data, { mode, image });
+      setHint();
+    };
+    draw();
+
+    function toBlob(){ return new Promise(r => canvas.toBlob(r, "image/png")); }
+    const fname = () => `vocario-${String(data.word).toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${mode === "sticker" ? "sticker" : "story"}.png`;
+
+    el.addEventListener("click", async e => {
+      const t = e.target.closest("[data-m],[data-a]"); if(!t) return;
+      if(t.dataset.m){
+        mode = t.dataset.m;
+        el.querySelectorAll(".vsh-tab").forEach(b => b.classList.toggle("on", b === t));
+        return draw();
+      }
+      const a = t.dataset.a;
+      if(a === "photo") return file.click();
+      if(a === "close" && hooks && hooks.onClose) return hooks.onClose();
+      const blob = await toBlob(); if(!blob) return;
+      const f = new File([blob], fname(), { type: "image/png" });
+      if(a === "share"){
+        try{
+          if(navigator.canShare && navigator.canShare({ files: [f] })){
+            await navigator.share({ files: [f], title: `${data.word} — Vocario`, text: `Learning “${data.word}” on Vocario` });
+            return;
+          }
+        }catch(err){ if(err && err.name === "AbortError") return; }
+        hint.textContent = "Sharing isn't available on this device, so the image was downloaded — open Instagram and add it from your gallery.";
+      }
+      const u = URL.createObjectURL(blob), link = document.createElement("a");
+      link.href = u; link.download = fname(); document.body.appendChild(link); link.click(); link.remove();
+      setTimeout(() => URL.revokeObjectURL(u), 2000);
+    });
+    file.addEventListener("change", () => {
+      const f = file.files && file.files[0]; if(!f) return;
+      if(objUrl) URL.revokeObjectURL(objUrl);
+      objUrl = URL.createObjectURL(f);
+      const img = new Image();
+      img.onload = () => { image = img; draw(); };
+      img.onerror = () => { hint.textContent = "Couldn't read that image — try another one."; };
+      img.src = objUrl;
+      file.value = "";
+    });
+    return { redraw: draw, canvas };
+  }
+
+  function open(data){
+    injectCss();
+    document.querySelectorAll(".vsh-ov").forEach(n => n.remove());   // never stack two windows
+    const ov = document.createElement("div"); ov.className = "vsh-ov";
+    const host = document.createElement("div"); host.style.cssText = "width:100%;max-width:420px";
+    ov.appendChild(host); document.body.appendChild(ov);
+    const close = () => ov.remove();
+    ov.addEventListener("mousedown", e => { if(e.target === ov) close(); });
+    document.addEventListener("keydown", function k(e){ if(e.key === "Escape"){ close(); document.removeEventListener("keydown", k); } });
+    return mount(host, data, { onClose: close });
+  }
+
+  window.VocarioShare = { open, mount, render, layout };
+})();
+
+</script>
 </head>
 <body>
 
@@ -1425,7 +1702,7 @@ function renderStudy(){
           <button class="gbtn ${c}" data-rate="${r}"><span class="l">${l}</span><span class="t">${p[i]}</span><span class="k">${r}</span></button>
         `).join("")}
       </div>
-      <p class="tapme"><button class="linkish" data-act="undo">Undo last answer (U)</button></p>
+      <p class="tapme"><button class="linkish" data-act="undo">Undo last answer (U)</button> · <button class="linkish" data-act="share" data-id="${esc(card.id)}">Share to Instagram</button></p>
     ` : typed ? `
       <div class="typed fadein">
         <label class="sr" for="guess">Type the word</label>
@@ -1703,6 +1980,7 @@ function filedPreview(c){
     </div>
     <div class="btnrow" style="margin-top:14px;justify-content:center">
       <button class="btn primary" data-go="study">Study now</button>
+      <button class="btn" data-act="share" data-id="${esc(c.id)}">Share</button>
       <button class="btn" data-go="catalog">See the drawer</button>
     </div>
   </div>`;
@@ -1807,6 +2085,14 @@ document.addEventListener("click", e => {
       state = { v:1, cards:[], log:[], settings:{...DEFAULTS}, day:{date:todayStr(), newDone:0, revDone:0} };
       save(); renderSuggest(); go("add"); toast("Drawer emptied.");
     }
+    return;
+  }
+  if(act === "share"){
+    const card = state.cards.find(x => x.id === t.dataset.id);
+    if(!card) return;
+    const m = card.meanings[0] || {};
+    VocarioShare.open({ word: card.word, pos: m.pos || "", definition: m.definition || "",
+      username: state.usernameChosen ? state.displayName : "" });
     return;
   }
   if(act === "username"){
@@ -1951,6 +2237,7 @@ $("#lookupForm").addEventListener("submit", e => {
 });
 
 document.addEventListener("keydown", e => {
+  if(document.querySelector(".vsh-ov")) return; // share window is open — leave the keys alone
   const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName);
   if(typing){
     if(e.key === "Enter" && e.target.id === "guess"){ e.preventDefault(); checkTyped(); }
