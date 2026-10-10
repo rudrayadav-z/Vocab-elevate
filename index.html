@@ -188,18 +188,12 @@ h2.title em{color:var(--orange-dk)}
 .speak{position:absolute;right:10px;bottom:10px;width:34px;height:34px;border:var(--b3) solid var(--edge);
   background:var(--yellow);display:grid;place-items:center;color:var(--onY);box-shadow:var(--shadow-sm)}
 .speak:hover{background:var(--field)}
-.hindibtn{position:absolute;top:36px;right:10px;font-family:var(--pixel);font-size:calc(9px * var(--ps));
-  background:var(--green);color:#08381f;border:var(--b2) solid var(--edge);padding:5px 7px;box-shadow:2px 2px 0 var(--edge)}
-.hindibtn:hover{background:var(--field)}
-.hindibtn.locked{background:var(--soft);color:var(--ink-2)}
-.hindibtn.locked:hover{background:var(--soft2)}
 .stamps{position:absolute;left:16px;bottom:12px;display:flex;gap:3px;flex-wrap:nowrap;overflow:hidden;max-width:50%}
 .stmp{font-family:var(--pixel);font-size:calc(7px * var(--ps));color:var(--onY);background:var(--yellow);border:1px solid var(--edge);padding:1px 3px}
 .tapme{text-align:center;font-family:var(--pixel);font-size:calc(9px * var(--ps));letter-spacing:.04em;color:var(--ink-2);margin-top:20px}
 @media(max-width:420px){
   .pad{padding:18px 12px 20px 12px}
   .speak{width:30px;height:30px;right:8px;bottom:8px}
-  .hindibtn{top:8px;left:8px;right:auto}
   .pos{max-width:60%}
   .stamps{max-width:38%}
 }
@@ -221,6 +215,10 @@ h2.title em{color:var(--orange-dk)}
   .gbtn .l{font-size:calc(8px * var(--ps))}
   .gbtn .t{font-size:calc(17px * var(--bs))}
 }
+.studyopts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;max-width:520px;margin:0 auto 12px}
+.chip{font-family:var(--pixel);font-size:calc(9px * var(--ps));padding:8px 12px;border:var(--b3) solid var(--edge);background:var(--card);color:var(--ink);cursor:pointer;border-radius:var(--r,0)}
+.chip.on{background:var(--yellow);color:#16233f}
+.chip[disabled]{opacity:.45;cursor:not-allowed}
 .sessionbar{display:flex;justify-content:space-between;align-items:center;max-width:520px;margin:0 auto 14px;
   font-family:var(--pixel);font-size:calc(7.5px * var(--ps));letter-spacing:.01em;color:var(--ink-2);flex-wrap:wrap;gap:6px}
 .sessionbar .counts b{font-weight:400}
@@ -433,7 +431,6 @@ html[data-theme="gamified"][data-mode="dark"]{
 }
 html[data-theme="gamified"][data-mode="dark"] .lbrow.me .pts,
 html[data-theme="gamified"][data-mode="dark"] .tab[aria-selected="true"] .n{color:#fff}
-html[data-theme="gamified"][data-mode="dark"] .hindibtn.locked{color:var(--ink-2)}
 html[data-theme="gamified"][data-mode="dark"] .gbtn.g2{color:#1a1330}
 
 /* ---------- minimalistic ---------- */
@@ -476,7 +473,6 @@ html[data-theme="minimal"] .xpbar{background:var(--soft)}
 html[data-theme="minimal"] .xpbar i{background:var(--orange)}
 html[data-theme="minimal"] .bars div{background:var(--orange)}
 html[data-theme="minimal"] .pos,html[data-theme="minimal"] .def .p{background:var(--soft);color:var(--ink-2)}
-html[data-theme="minimal"] .hindibtn{background:var(--soft);color:var(--ink)}
 html[data-theme="minimal"] .speak{background:var(--soft)}
 
 /* ---------- elegant ---------- */
@@ -611,7 +607,6 @@ html:not([data-theme="gamified"]) .typed input,
 html:not([data-theme="gamified"]) .hud .lvl,
 html:not([data-theme="gamified"]) .hud .streak,
 html:not([data-theme="gamified"]) .speak,
-html:not([data-theme="gamified"]) .hindibtn,
 html:not([data-theme="gamified"]) .iconbtn,
 html:not([data-theme="gamified"]) .unbox input,
 html:not([data-theme="gamified"]) label.opt input[type=number]{border-radius:calc(var(--r) * .6)}
@@ -624,8 +619,7 @@ html:not([data-theme="gamified"]) .xpbar,
 html:not([data-theme="gamified"]) .xpbar i{border-radius:99px}
 html:not([data-theme="gamified"]) .lookup button{border-radius:0}
 html:not([data-theme="gamified"]) .face{overflow:hidden}
-html:not([data-theme="gamified"]) .speak,
-html:not([data-theme="gamified"]) .hindibtn{box-shadow:none}
+html:not([data-theme="gamified"]) .speak{box-shadow:none}
 .btn.primary,.lookup button,.authcard button{background:var(--primary-bg)}
 .btn.primary:hover,.lookup button:hover,.authcard button:hover{background:var(--primary-bg-h)}
 /* header controls for theme + mode */
@@ -1601,26 +1595,6 @@ async function logPoints(amount){
 }
 
 /* ============================================================
-   HINDI TRANSLATION (premium)
-   Uses MyMemory, a free translation API with no key required at
-   this volume. Not persisted to the card — fetched fresh each time
-   it's requested, keeping this add-on decoupled from the cards
-   table schema.
-   ============================================================ */
-const hindiCache = new Map();
-async function fetchHindi(word){
-  if(hindiCache.has(word)) return hindiCache.get(word);
-  const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=en|hi`);
-  if(!res.ok) throw new Error("offline");
-  const data = await res.json();
-  const text = data?.responseData?.translatedText;
-  if(!text) throw new Error("notfound");
-  hindiCache.set(word, text);
-  return text;
-}
-
-
-/* ============================================================
    POINTS, LEVELS & STREAKS
    Score is computed from data that's already syncing (how many
    cards exist, how many times each has been reviewed) — so the
@@ -2188,13 +2162,9 @@ function cardFaces(card){
     </div>`;
 
   const d2w = S().dir === "d2w";
-  const hindiBtn = state.isPremium
-    ? `<button class="hindibtn" data-act="hindi" data-word="${esc(card.word)}" title="Hindi meaning">हिं</button>`
-    : `<button class="hindibtn locked" data-act="hindi" data-word="${esc(card.word)}" title="Premium feature">🔒हिं</button>`;
   return {
     front: `<div class="pad"><span class="cardno">${esc(refNo(card))}</span>${d2w ? clue : `<div class="prompt" style="text-align:center">${word}</div>`}</div>`,
     back:  `<div class="pad"><span class="cardno">${esc(refNo(card))}</span>${d2w ? word + defsFull : defsFull}${stamps}</div>
-            ${hindiBtn}
             <button class="speak" data-act="speak" title="Hear it (S)" aria-label="Hear pronunciation">${icon.sound}</button>`
   };
 }
@@ -2231,6 +2201,10 @@ function renderStudy(){
     <div class="sessionbar">
       <span class="counts"><b class="c-new">${q.fresh.length} new</b> · <b class="c-lrn">${q.learn.length} learning</b> · <b class="c-due">${q.rev.length} due</b></span>
       <span>${stateLabel}${card.lapses ? " · " + card.lapses + " lapse" + (card.lapses>1?"s":"") : ""}</span>
+    </div>
+    <div class="studyopts">
+      <button type="button" class="chip ${S().dir==="w2d" ? "on" : ""}" data-act="opt" data-k="dir" aria-pressed="${S().dir==="w2d"}" title="Show the word first and guess the meaning, instead of the other way round">Show word first</button>
+      <button type="button" class="chip ${S().typed && S().dir==="d2w" ? "on" : ""}" data-act="opt" data-k="typed" aria-pressed="${!!(S().typed && S().dir==="d2w")}" ${S().dir==="w2d" ? "disabled" : ""} title="${S().dir==="w2d" ? "Turn off “Show word first” to type your answers" : "Type the word; spelling is checked before you grade yourself"}">Type your answer</button>
     </div>
     <div class="stage">
       <div class="card3d ${ui.flipped ? "flip" : ""}" id="card3d" role="button" tabindex="0" aria-label="Flashcard, activate to reveal">
@@ -2336,15 +2310,6 @@ function renderDesk(){
       <button data-act="username">${state.usernameChosen ? "Change" : "Pick one"}</button>
     </div>
 
-    ${state.isPremium ? `
-      <div class="acctrow" style="background:var(--yellow);color:var(--ink);border-color:var(--edge)">
-        <span style="color:var(--ink)">⭐ Premium — Hindi translations unlocked</span>
-      </div>` : `
-      <div class="acctrow">
-        <span>🔒 Free plan — Hindi meanings are premium</span>
-        <button data-act="upgrade">Upgrade</button>
-      </div>`}
-
     <div class="streakbanner">${mimg("streak")}<div><b>${streak ? streak + "-day streak" : "No streak yet"}</b><span>${streak ? "Keep it burning — review a card every day." : "Review a card today to light your first flame."}</span></div></div>
 
     <div class="grid4">
@@ -2374,17 +2339,12 @@ function renderDesk(){
       <input type="number" min="0" max="200" value="${S().newPerDay}" data-set="newPerDay"></label>
     <label class="opt">Reviews a day <span class="note">Caps the daily load when a big batch comes due.</span>
       <input type="number" min="10" max="9999" value="${S().revPerDay}" data-set="revPerDay"></label>
-    <label class="opt">Show the word first instead <span class="note">Default: read the definition, guess the word — the usual flashcard format. Turn this on to flip it.</span>
-      <input type="checkbox" ${S().dir==="w2d"?"checked":""} data-set="dir"></label>
-    <label class="opt">Type your answer <span class="note">Spelling gets checked before you grade yourself.</span>
-      <input type="checkbox" ${S().typed?"checked":""} data-set="typed"></label>
     <label class="opt">Play audio on reveal <span class="note">Uses the dictionary recording when there is one.</span>
       <input type="checkbox" ${S().autoAudio?"checked":""} data-set="autoAudio"></label>
 
     <h3 class="sec">Your data</h3>
     <div class="btnrow">
       <button class="btn" data-act="export">Export backup</button>
-      <button class="btn" data-act="anki">Export for Anki</button>
       <button class="btn" data-act="import">Import backup</button>
       <button class="btn ghost" data-act="wipe" style="color:var(--orange-dk);border-color:var(--orange-dk)">Delete everything</button>
     </div>
@@ -2544,15 +2504,6 @@ function exportJSON(){
   download(`vocario-${todayStr()}.json`, JSON.stringify(state, null, 1), "application/json");
   toast("Backup saved to your downloads.");
 }
-function exportAnki(){
-  const rows = state.cards.map(c => [
-    c.word,
-    c.meanings.map(m => `(${m.pos}) ${m.definition}`).join(" · ") + (c.meanings[0].example ? ` — “${c.meanings[0].example}”` : ""),
-    c.ipa || ""
-  ].map(f => String(f).replace(/\t|\n/g," ")).join("\t")).join("\n");
-  download(`vocario-anki-${todayStr()}.tsv`, rows, "text/tab-separated-values");
-  toast("TSV saved — import it into Anki as Word / Meaning / IPA.");
-}
 function importJSON(file){
   const r = new FileReader();
   r.onload = () => {
@@ -2608,22 +2559,16 @@ document.addEventListener("click", e => {
 
   const act = t.dataset.act;
   if(act === "speak"){ e.stopPropagation(); const c = state.cards.find(x=>x.id===ui.currentId); if(c) speak(c); return; }
-  if(act === "hindi"){
-    e.stopPropagation();
-    const word = t.dataset.word;
-    if(!state.isPremium){ toast("Hindi meanings are a premium feature — upgrade coming soon!"); return; }
-    const orig = t.textContent; t.disabled = true; t.textContent = "…";
-    fetchHindi(word)
-      .then(text => toast(`${word} → ${text}`))
-      .catch(() => toast("Couldn't fetch a translation right now."))
-      .finally(() => { t.disabled = false; t.textContent = orig; });
-    return;
+  if(act === "opt"){
+    if(t.disabled) return;
+    if(t.dataset.k === "dir"){ S().dir = S().dir === "w2d" ? "d2w" : "w2d"; ui.typedGuess = ""; }
+    else if(t.dataset.k === "typed") S().typed = !S().typed;
+    save(); render(); return;
   }
   if(act === "undo")   return undo();
   if(act === "check")  return checkTyped();
   if(act === "ahead"){ const q = queue(); if(q.soon){ ui.currentId = q.soon.id; ui.ahead = true; ui.flipped = false; render(); } return; }
   if(act === "export") return exportJSON();
-  if(act === "anki")   return exportAnki();
   if(act === "import") return $("#fileIn").click();
   if(act === "wipe"){
     if(confirm("Delete all of your cards, everywhere — this device and the cloud? This cannot be undone.")){
@@ -2649,10 +2594,6 @@ document.addEventListener("click", e => {
   }
   if(act === "signout"){
     if(confirm("Sign out of Vocario?")) signOut();
-    return;
-  }
-  if(act === "upgrade"){
-    toast("Payments aren't connected yet — coming soon!");
     return;
   }
   if(t.id === "card3d") flip();
