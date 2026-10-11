@@ -256,18 +256,23 @@ h2.title em{color:var(--orange-dk)}
 @keyframes spin{0%{transform:translateY(0) rotate(0)}50%{transform:translateY(-30px) rotate(180deg) scale(1.08)}100%{transform:translateY(0) rotate(360deg)}}
 @keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-9deg)}75%{transform:rotate(9deg)}}
 @keyframes bubin{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.06);opacity:1}100%{transform:scale(1)}}
-.buddy{display:flex;align-items:flex-end;gap:6px;margin:4px 0 8px}
-.buddy .mimg{width:min(40vw,200px);flex:none;margin:0;cursor:pointer;animation:bob 3s ease-in-out infinite;transform-origin:50% 100%;-webkit-tap-highlight-color:transparent;filter:drop-shadow(3px 3px 0 var(--dropsh))}
-.buddy.a-hop .mimg{animation:hop .6s ease-out}
-.buddy.a-shake .mimg{animation:shake .6s ease-out}
-.buddy.a-spin .mimg{animation:spin .8s ease-in-out}
-.buddy.a-wiggle .mimg{animation:wiggle .5s ease-in-out 2}
-.buddy .bub{position:relative;flex:1;min-width:0;margin-bottom:34px;padding:10px 13px;border:var(--b3) solid var(--edge);background:var(--card);color:var(--ink);font-family:var(--body);font-size:calc(19px * var(--bs));line-height:1.22;animation:bubin .3s ease-out;transform-origin:0 100%}
-.buddy .bub::before{content:"";position:absolute;left:-12px;bottom:12px;width:14px;height:14px;background:var(--card);border-left:var(--b3) solid var(--edge);border-bottom:var(--b3) solid var(--edge);transform:rotate(45deg);transform-origin:50% 50%;margin-left:3px}
-.buddy .bub small{display:block;margin-top:4px;font-size:.62em;color:var(--ink-2);opacity:.8}
+.bsplit{display:grid;grid-template-columns:minmax(0,1fr) clamp(84px,27%,124px);gap:10px;align-items:end;margin:0 0 12px}
+.bsplit>.bl{min-width:0}
+.bsplit .eyebrow{margin-top:0}
+.br{align-self:end;-webkit-tap-highlight-color:transparent}
+.br .mimg{width:100%;margin:0;cursor:pointer;animation:bob 3s ease-in-out infinite;transform-origin:50% 100%;filter:drop-shadow(2px 2px 0 var(--dropsh))}
+.br.a-hop .mimg{animation:hop .6s ease-out}
+.br.a-shake .mimg{animation:shake .6s ease-out}
+.br.a-spin .mimg{animation:spin .8s ease-in-out}
+.br.a-wiggle .mimg{animation:wiggle .5s ease-in-out 2}
+.bub{position:relative;display:block;margin:8px 12px 0 0;padding:5px 10px;border:var(--b3) solid var(--edge);background:var(--card);color:var(--ink);font-family:var(--body);font-size:calc(13px * var(--bs));line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;animation:bubin .3s ease-out;transform-origin:100% 50%}
+.studysplit .studyopts{justify-content:flex-start;margin:0;gap:6px}
+.studysplit .chip{font-size:calc(9px * var(--ps));padding:7px 8px}
+.streakbanner.bsplit{align-items:end;padding:10px 12px}
+.streakbanner .bl b{margin-bottom:4px}
 .mlogo.a-wiggle{animation:wiggle .5s ease-in-out 2}
 #mpop.show .mimg{animation:hop .6s ease-out}
-@media (prefers-reduced-motion:reduce){.mimg,.buddy .mimg,.buddy .bub{animation:none!important}}
+@media (prefers-reduced-motion:reduce){.mimg,.br .mimg,.bub{animation:none!important}}
 /* ---------- mascot ---------- */
 .brandrow{display:flex;align-items:center;gap:10px}
 .mlogo{width:64px;height:64px;flex:none;cursor:pointer;filter:drop-shadow(3px 3px 0 var(--dropsh));transform-origin:50% 90%;-webkit-tap-highlight-color:transparent}
@@ -280,7 +285,6 @@ h2.title em{color:var(--orange-dk)}
 .lbhero .mimg{width:180px;margin-bottom:6px;animation:bob 3s ease-in-out infinite;transform-origin:50% 100%}
 .lbhero{text-align:center;margin:2px 0 10px}
 .streakbanner{display:flex;align-items:center;gap:14px;padding:10px 14px;margin:0 0 16px;border:var(--b3) solid var(--edge);background:var(--card);color:var(--ink)}
-.streakbanner .mimg{width:100px;margin:0;flex:none;animation:bob 2.6s ease-in-out infinite}
 .streakbanner b{font-family:var(--pixel);font-size:calc(11px * var(--ps));display:block;margin-bottom:4px}
 .streakbanner span{font-family:var(--body);font-size:calc(16px * var(--bs));color:var(--ink-2)}
 #mpop{position:fixed;left:10px;bottom:calc(10px + env(safe-area-inset-bottom));width:min(38vw,170px);z-index:59;pointer-events:none;
@@ -1218,10 +1222,12 @@ html:not([data-theme="gamified"]) .thopt{border-radius:calc(var(--r) * .8)}
     <!-- ============ LOOK UP ============ -->
     <section id="v-add" role="tabpanel" aria-labelledby="tab-add">
       <div class="center">
-        <div id="lookBuddy"></div>
-        <p class="eyebrow">Acquisitions</p>
-        <h2 class="title">File a <em>new word</em></h2>
-        <p class="lede">Definitions, pronunciation and example sentences come from a live dictionary. One lookup makes one card.</p>
+        <div class="bsplit" id="lookSplit"><div class="bl">
+          <p class="eyebrow">Acquisitions</p>
+          <h2 class="title">File a <em>new word</em></h2>
+          <p class="lede">Definitions, pronunciation and example sentences come from a live dictionary. One lookup makes one card.</p>
+          <div class="bubslot"></div>
+        </div><div class="brslot"></div></div>
 
         <form id="lookupForm" class="lookup" autocomplete="off">
           <label class="sr" for="q">Word to look up</label>
@@ -1240,10 +1246,12 @@ html:not([data-theme="gamified"]) .thopt{border-radius:calc(var(--r) * .8)}
 
     <!-- ============ CATALOG ============ -->
     <section id="v-catalog" role="tabpanel" aria-labelledby="tab-catalog" hidden>
-      <div id="catBuddy"></div>
-      <p class="eyebrow">The drawer</p>
-      <h2 class="title">Everything <em>on file</em></h2>
-      <p class="lede">Sorted by whatever you like. Suspend a card to keep it without studying it.</p>
+      <div class="bsplit" id="catSplit"><div class="bl">
+        <p class="eyebrow">The drawer</p>
+        <h2 class="title">Everything <em>on file</em></h2>
+        <p class="lede">Sorted by whatever you like. Suspend a card to keep it without studying it.</p>
+        <div class="bubslot"></div>
+      </div><div class="brslot"></div></div>
       <div class="toolbar">
         <div class="field">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
@@ -1810,23 +1818,23 @@ setTimeout(() => ["oops","think","happy","dance","gem"].forEach(n => { new Image
 
 /* ---------- the bunny buddy: big, talkative, tappable ---------- */
 const BUDDY_LINES = {
-  idle:  { pose:"read",   lines:["Go on, guess. I won't judge. (I will.)","Brain on? Cool. Flip the card.","I read the whole dictionary. Your turn.","Think hard. I'm watching."] },
-  front: { pose:"think",  lines:["Hmm… you know this one. Probably.","Take your time. Not too much though.","Don't peek. I see you."] },
-  back:  { pose:"ask",    lines:["So… were you right? Be honest.","Grade yourself. I trust you. Barely.","Be real with me. Again, Hard, Good or Easy?"] },
-  r1:    { pose:"oops",   lines:["Again? Ouch. It happens to the best of us.","Brutal. You'll see it again soon, don't worry.","That word is now your nemesis."], anim:"shake" },
-  r2:    { pose:"think",  lines:["Hard, huh? Respect for the honesty.","Wobbly but alive. Nice.","Close one. It'll stick next time."], anim:"wiggle" },
-  r3:    { pose:"happy",  lines:["Good! Look at you, being smart.","Nailed it. Easy, right? …Right?","That's the stuff. Keep going!"], anim:"hop" },
-  r4:    { pose:"dance",  lines:["EASY?! Show-off. I love it.","Genius alert! Do a little dance!","Absolutely cooked that one."], anim:"spin" },
-  done:  { pose:"party",  lines:["All done! You absolute legend.","Deck cleared. Go touch some grass."], anim:"spin" },
-  look:  { pose:"wave",   lines:["Type any word. I'll fetch it!","Got a tricky word? Feed me.","New word? Ooh, give it here."] },
-  busy:  { pose:"think",  lines:["Digging through the dictionary…","One sec, flipping pages…"] },
-  filed: { pose:"gem",    lines:["Filed! Another gem in the drawer.","Got it. Nice find!"], anim:"hop" },
-  dupe:  { pose:"happy",  lines:["Already got that one. Great taste though."] },
-  miss:  { pose:"ask",    lines:["Hmm, never heard of it. Spelling?","Couldn't find that. Try the base word?"], anim:"wiggle" },
-  catalog:{ pose:"read",  lines:["Look at all those words. Fancy!","Your drawer. I organised it. (I didn't.)","Suspend a card if it's driving you mad."] },
-  desk:  { pose:"streak", lines:["Stats time! Numbers don't lie.","Keep that streak alive. Please.","Settings are boring. Streaks are cool."] },
-  board: { pose:"trophy", lines:["Who's on top this week? Hmm?","Climb the board. I believe in you.","Points = bragging rights."] },
-  tap:   { pose:null,     lines:["Hehe, that tickles!","Boop!","Again! Again!","I'm supposed to be working here.","Stop poking, study!","You're the best, you know that?","Fun fact: bunnies can't blush. I'm blushing."] }
+  idle:  { pose:"read",   lines:["Guess. I won't judge.","Brain on? Flip it.","Your turn. I'm watching."] },
+  front: { pose:"think",  lines:["You know this. Probably.","Don't peek. I see you."] },
+  back:  { pose:"ask",    lines:["Right? Be honest.","Grade yourself. Honestly.","Again, Hard, Good, Easy?"] },
+  r1:    { pose:"oops",   lines:["Again? Ouch. It happens.","Brutal. It'll be back.","Your new nemesis."], anim:"shake" },
+  r2:    { pose:"think",  lines:["Hard? Honest. Respect.","Wobbly but alive. Nice.","Close one. It'll stick."], anim:"wiggle" },
+  r3:    { pose:"happy",  lines:["Good! Look at you!","Nailed it. Keep going!","That's the stuff!"], anim:"hop" },
+  r4:    { pose:"dance",  lines:["EASY?! Show-off. Love it.","Genius alert! Dance time!","You cooked that one."], anim:"spin" },
+  done:  { pose:"party",  lines:["All done! Legend.","Deck cleared. Touch grass."], anim:"spin" },
+  look:  { pose:"wave",   lines:["Type a word. I'll fetch!","Tricky word? Feed me.","Ooh, a new word?"] },
+  busy:  { pose:"think",  lines:["Flipping pages…","One sec, digging…"] },
+  filed: { pose:"gem",    lines:["Filed! Another gem.","Got it. Nice find!"], anim:"hop" },
+  dupe:  { pose:"happy",  lines:["Already got it. Great taste."] },
+  miss:  { pose:"ask",    lines:["Hmm, spelling?","Try the base word?"], anim:"wiggle" },
+  catalog:{ pose:"read",  lines:["All your words. Fancy!","Suspend annoying cards.","Your drawer. Very tidy."] },
+  desk:  { pose:"streak", lines:["Stats! No lies.","Keep the streak!","Streaks > settings."] },
+  board: { pose:"trophy", lines:["Who's on top this week?","Climb it. I believe.","Points = bragging rights."] },
+  tap:   { pose:null,     lines:["Hehe, that tickles!","Boop!","Again! Again!","Stop poking, study!","You're the best!"] }
 };
 const TAP_POSES = ["happy","dance","wave","gem","party","streak","trophy","think","ask","read"];
 const TAP_ANIMS = ["hop","spin","wiggle","hop"];
@@ -1839,7 +1847,7 @@ function setBuddy(key, opt){
   clearTimeout(setBuddy._sleep);
   setBuddy._sleep = setTimeout(() => {
     if(document.hidden) return;
-    ui.buddy = { key:"sleep", pose:"sleep", line:"zzz… tap me to wake me up.", anim:"" }; paintBuddies(false);
+    ui.buddy = { key:"sleep", pose:"sleep", line:"zzz… tap to wake me.", anim:"" }; paintBuddies(false);
   }, 45000);
 }
 const CTX_DEFAULT = { study:"idle", look:"look", catalog:"catalog", desk:"desk", board:"board" };
@@ -1850,23 +1858,31 @@ function ctxBuddy(ctx, key, opt){
   }
   ui.buddyCtx = ctx;
 }
-function buddyHTML(){
-  if(!ui.buddy) ui.buddy = { key:"idle", pose:BUDDY_LINES.idle.pose, line:pick(BUDDY_LINES.idle.lines), anim:"" };
-  const b = ui.buddy;
-  return `<div class="buddy ${b.anim ? "a-"+b.anim : ""}" data-buddy="1">${mimg(b.pose,"","Vocario bunny — tap me")}<div class="bub" role="status">${esc(b.line)}</div></div>`;
-}
+function buddyState(){ if(!ui.buddy) ui.buddy = { key:"idle", pose:BUDDY_LINES.idle.pose, line:pick(BUDDY_LINES.idle.lines), anim:"" }; return ui.buddy; }
+function buddyBub(){ const b = buddyState(); return `<span class="bub" role="status" title="${esc(b.line)}">${esc(b.line)}</span>`; }
+function buddyImg(){ const b = buddyState(); return `<div class="br buddy ${b.anim ? "a-"+b.anim : ""}" data-buddy="1">${mimg(b.pose,"","Vocario bunny — tap me")}</div>`; }
+/** left column = whatever the page puts there, then the one-line bubble; right column = the bunny */
+function buddySplit(leftHTML, cls){ return `<div class="bsplit ${cls||""}"><div class="bl">${leftHTML||""}${buddyBub()}</div>${buddyImg()}</div>`; }
 function paintBuddies(animate){
   const b = ui.buddy; if(!b) return;
-  document.querySelectorAll(".buddy").forEach(el => {
-    const img = el.querySelector(".mimg"), bub = el.querySelector(".bub");
-    if(img) img.src = "mascot/" + b.pose + ".png";
-    if(bub){ bub.textContent = b.line; bub.style.animation = "none"; void bub.offsetWidth; bub.style.animation = ""; }
+  document.querySelectorAll(".bub").forEach(bub => {
+    bub.textContent = b.line; bub.title = b.line; bub.style.animation = "none"; void bub.offsetWidth; bub.style.animation = "";
+  });
+  document.querySelectorAll(".br").forEach(el => {
+    const img = el.querySelector(".mimg"); if(img) img.src = "mascot/" + b.pose + ".png";
     el.classList.remove("a-hop","a-shake","a-spin","a-wiggle"); void el.offsetWidth;
     if(animate && b.anim) el.classList.add("a-" + b.anim);
   });
 }
+/** static pages (Look up, Catalog) have slots; fill them when the page's mood changes */
+function mountBuddy(root, ctx, key, opt){
+  if(!root) return;
+  const bs = root.querySelector(".bubslot"), rs = root.querySelector(".brslot");
+  if(!bs || !rs) return;
+  if(!bs.firstChild || ui.buddyCtx !== ctx){ ctxBuddy(ctx, key, opt); bs.innerHTML = buddyBub(); rs.innerHTML = buddyImg(); }
+}
 document.addEventListener("click", e => {
-  const img = e.target.closest(".buddy .mimg");
+  const img = e.target.closest(".br .mimg");
   if(img){ setBuddy("tap", { pose: pick(TAP_POSES), anim: pick(TAP_ANIMS) }); return; }
   const lg = e.target.closest(".mlogo");
   if(lg){ lg.classList.remove("a-wiggle"); void lg.offsetWidth; lg.classList.add("a-wiggle"); setBuddy("tap", { pose: pick(TAP_POSES), anim: pick(TAP_ANIMS) }); }
@@ -2371,11 +2387,10 @@ function renderStudy(){
       <span class="counts"><b class="c-new">${q.fresh.length} new</b> · <b class="c-lrn">${q.learn.length} learning</b> · <b class="c-due">${q.rev.length} due</b></span>
       <span>${stateLabel}${card.lapses ? " · " + card.lapses + " lapse" + (card.lapses>1?"s":"") : ""}</span>
     </div>
-    ${(ctxBuddy("study"), buddyHTML())}
-    <div class="studyopts">
+    ${(ctxBuddy("study"), "")}<div class="bsplit studysplit"><div class="bl"><div class="studyopts">
       <button type="button" class="chip ${S().dir==="w2d" ? "on" : ""}" data-act="opt" data-k="dir" aria-pressed="${S().dir==="w2d"}" title="Show the word first and guess the meaning, instead of the other way round">Show word first</button>
       <button type="button" class="chip ${S().typed && S().dir==="d2w" ? "on" : ""}" data-act="opt" data-k="typed" aria-pressed="${!!(S().typed && S().dir==="d2w")}" ${S().dir==="w2d" ? "disabled" : ""} title="${S().dir==="w2d" ? "Turn off “Show word first” to type your answers" : "Type the word; spelling is checked before you grade yourself"}">Type your answer</button>
-    </div>
+    </div>${buddyBub()}</div>${buddyImg()}</div>
     <div class="stage">
       <div class="card3d ${ui.flipped ? "flip" : ""}" id="card3d" role="button" tabindex="0" aria-label="Flashcard, activate to reveal">
         <div class="face">${f.front}</div>
@@ -2402,7 +2417,7 @@ function renderStudy(){
 }
 
 function renderCatalog(){
-  { const cb=$("#catBuddy"); if(cb && (!cb.firstChild || ui.buddyCtx!=="catalog")){ ctxBuddy("catalog", "catalog", state.cards.length ? null : {pose:"sleep",line:"Empty drawer. Go file a word!"}); cb.innerHTML = buddyHTML(); } }
+  mountBuddy($("#catSplit"), "catalog", "catalog", state.cards.length ? null : {pose:"sleep",line:"Empty! File a word."});
   const term = ($("#filter").value || "").toLowerCase().trim();
   const sort = $("#sort").value;
   let list = state.cards.filter(c =>
@@ -2481,8 +2496,7 @@ function renderDesk(){
       <button data-act="username">${state.usernameChosen ? "Change" : "Pick one"}</button>
     </div>
 
-    ${(ctxBuddy("desk"), buddyHTML())}
-    <div class="streakbanner">${mimg("streak")}<div><b>${streak ? streak + "-day streak" : "No streak yet"}</b><span>${streak ? "Keep it burning — review a card every day." : "Review a card today to light your first flame."}</span></div></div>
+    ${(ctxBuddy("desk"), "")}<div class="bsplit streakbanner"><div class="bl"><b>${streak ? streak + "-day streak" : "No streak yet"}</b><span>${streak ? "Keep it burning — review a card every day." : "Review a card today to light your first flame."}</span>${buddyBub()}</div>${buddyImg()}</div>
 
     <div class="grid4">
       <div class="stat"><div class="k">Level</div><div class="v">${score.level} <small>${score.into}/${score.need} xp</small></div></div>
@@ -2554,10 +2568,9 @@ async function renderBoard(){
   const myRank = rows.findIndex(r => r.user_id ? r.user_id === state.userId : r.display_name === state.displayName);
 
   el.innerHTML = `
-    <p class="eyebrow">Weekly ranking</p>
+    ${(ctxBuddy("board","board",myRank>=0 ? {pose: myRank<3?"trophy":"happy", line: myRank===0 ? "#1! Don't get comfy." : "You're #"+(myRank+1)+". Keep climbing!"} : null), "")}<div class="bsplit"><div class="bl"><p class="eyebrow">Weekly ranking</p>
     <h2 class="title">The <em>leaderboard</em></h2>
-    <p class="lede">Everyone's points earned since Monday. Resets fresh every week.</p>
-    ${rows.length ? (ctxBuddy("board","board",myRank>=0 ? {pose: myRank<3?"trophy":"happy", line: myRank===0 ? "You're #1! Don't get comfy." : "You're #"+(myRank+1)+" this week. Keep climbing!"} : null), buddyHTML()) : ""}
+    <p class="lede">Everyone's points earned since Monday. Resets fresh every week.</p>${buddyBub()}</div>${buddyImg()}</div>
     <div class="lbrows">
       ${rows.length ? rows.map((r,i) => `
         <div class="lbrow ${(r.user_id ? r.user_id === state.userId : r.display_name === state.displayName) ? "me" : ""}">
@@ -2585,7 +2598,7 @@ function render(){
     $("#v-" + t.dataset.view).hidden = !on;
   });
   if(ui.view === "study") renderStudy();
-  if(ui.view === "add"){ const lb=$("#lookBuddy"); if(lb && (!lb.firstChild || ui.buddyCtx !== "look")){ ctxBuddy("look"); lb.innerHTML = buddyHTML(); } }
+  if(ui.view === "add") mountBuddy($("#lookSplit"), "look", "look");
   if(ui.view === "catalog") renderCatalog();
   if(ui.view === "desk") renderDesk();
   if(ui.view === "board") renderBoard();
@@ -2656,7 +2669,7 @@ async function fileWords(input){
     const bits = [];
     if(added.length) bits.push(`<p class="hint"><b>Filed ${added.length}:</b> ${added.map(c=>esc(c.word)).join(", ")}</p>`);
     if(dupes.length) bits.push(`<p class="hint">Already on file: ${dupes.map(c=>esc(c.word)).join(", ")}</p>`);
-    if(failed.length && !added.length && failed.every(f=>f.why==="offline")) setBuddy("miss",{pose:"sleep",line:"Can't reach the dictionary. Check your connection?"});
+    if(failed.length && !added.length && failed.every(f=>f.why==="offline")) setBuddy("miss",{pose:"sleep",line:"No connection?"});
     if(failed.length) bits.push(`<p class="hint" style="color:var(--orange-dk)">Couldn't file: ${failed.map(f=>esc(f.w) + (f.why==="offline" ? " (no connection)" : "")).join(", ")}</p>`);
     if(added.length) bits.push(`<div class="btnrow" style="margin-top:12px"><button class="btn primary" data-go="study">Study now</button><button class="btn" data-go="catalog">See the drawer</button></div>`);
     out.innerHTML = bits.join("") || `<p class="hint">Nothing filed.</p>`;
