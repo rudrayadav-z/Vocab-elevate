@@ -237,27 +237,58 @@ h2.title em{color:var(--orange-dk)}
 .empty p{color:var(--ink-2);margin:0 0 18px;font-family:var(--body);font-size:calc(18px * var(--bs))}
 
 
+/* ---------- phone lookup sheet + help ---------- */
+.lkbox{max-width:380px;width:100%;text-align:center;max-height:92vh;overflow:auto}
+.lkbox h3{margin:0 0 2px}
+.lkbox .lkdef{text-align:left;margin:8px 0 0;font-family:var(--body);font-size:calc(18px * var(--bs))}
+.lkbox .lkdef .p{font-family:var(--pixel);font-size:calc(8px * var(--ps));margin-right:6px;opacity:.8}
+.lkbox .btnrow{justify-content:center;margin-top:14px}
+.phonehelp{margin:0 0 18px;border:var(--b3) solid var(--edge);background:var(--card);color:var(--ink);padding:10px 14px}
+.phonehelp summary{cursor:pointer;font-family:var(--pixel);font-size:calc(10px * var(--ps))}
+.phonehelp h4{font-family:var(--pixel);font-size:calc(9px * var(--ps));margin:14px 0 4px}
+.phonehelp ol{margin:4px 0 0;padding-left:20px;font-family:var(--body);font-size:calc(17px * var(--bs));line-height:1.35}
+.phonehelp code{background:var(--field);padding:1px 5px;word-break:break-all}
+
+/* ---------- bold, interactive bunny ---------- */
+@keyframes bob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-6px) rotate(1.2deg)}}
+@keyframes hop{0%{transform:translateY(0) scale(1,1)}20%{transform:translateY(0) scale(1.12,.88)}50%{transform:translateY(-34px) scale(.94,1.08)}80%{transform:translateY(0) scale(1.1,.9)}100%{transform:translateY(0) scale(1,1)}}
+@keyframes shake{0%,100%{transform:translateX(0) rotate(0)}15%{transform:translateX(-10px) rotate(-7deg)}35%{transform:translateX(9px) rotate(6deg)}55%{transform:translateX(-7px) rotate(-4deg)}75%{transform:translateX(5px) rotate(3deg)}}
+@keyframes spin{0%{transform:translateY(0) rotate(0)}50%{transform:translateY(-30px) rotate(180deg) scale(1.08)}100%{transform:translateY(0) rotate(360deg)}}
+@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-9deg)}75%{transform:rotate(9deg)}}
+@keyframes bubin{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.06);opacity:1}100%{transform:scale(1)}}
+.buddy{display:flex;align-items:flex-end;gap:6px;margin:4px 0 8px}
+.buddy .mimg{width:min(40vw,200px);flex:none;margin:0;cursor:pointer;animation:bob 3s ease-in-out infinite;transform-origin:50% 100%;-webkit-tap-highlight-color:transparent;filter:drop-shadow(3px 3px 0 var(--dropsh))}
+.buddy.a-hop .mimg{animation:hop .6s ease-out}
+.buddy.a-shake .mimg{animation:shake .6s ease-out}
+.buddy.a-spin .mimg{animation:spin .8s ease-in-out}
+.buddy.a-wiggle .mimg{animation:wiggle .5s ease-in-out 2}
+.buddy .bub{position:relative;flex:1;min-width:0;margin-bottom:34px;padding:10px 13px;border:var(--b3) solid var(--edge);background:var(--card);color:var(--ink);font-family:var(--body);font-size:calc(19px * var(--bs));line-height:1.22;animation:bubin .3s ease-out;transform-origin:0 100%}
+.buddy .bub::before{content:"";position:absolute;left:-12px;bottom:12px;width:14px;height:14px;background:var(--card);border-left:var(--b3) solid var(--edge);border-bottom:var(--b3) solid var(--edge);transform:rotate(45deg);transform-origin:50% 50%;margin-left:3px}
+.buddy .bub small{display:block;margin-top:4px;font-size:.62em;color:var(--ink-2);opacity:.8}
+.mlogo.a-wiggle{animation:wiggle .5s ease-in-out 2}
+#mpop.show .mimg{animation:hop .6s ease-out}
+@media (prefers-reduced-motion:reduce){.mimg,.buddy .mimg,.buddy .bub{animation:none!important}}
 /* ---------- mascot ---------- */
 .brandrow{display:flex;align-items:center;gap:10px}
-.mlogo{width:46px;height:46px;flex:none;filter:drop-shadow(2px 2px 0 var(--dropsh))}
+.mlogo{width:64px;height:64px;flex:none;cursor:pointer;filter:drop-shadow(3px 3px 0 var(--dropsh));transform-origin:50% 90%;-webkit-tap-highlight-color:transparent}
 .mimg{display:block;height:auto;margin:0 auto;user-select:none;-webkit-user-drag:none}
-.empty .mimg{width:150px;max-width:46%;margin-bottom:14px}
-.auth-badge img{width:118px;height:auto;filter:drop-shadow(3px 3px 0 var(--dropsh))}
+.empty .mimg{width:230px;max-width:62%;margin-bottom:14px;animation:bob 3.2s ease-in-out infinite;transform-origin:50% 100%}
+.auth-badge img{width:min(52vw,190px);animation:bob 3s ease-in-out infinite;transform-origin:50% 100%;height:auto;filter:drop-shadow(3px 3px 0 var(--dropsh))}
 .tapbun{display:flex;flex-direction:column;align-items:center;gap:4px;margin-top:6px}
 .tapbun .mimg{width:70px}
-.msm{width:96px;margin:6px auto 2px}
-.lbhero .mimg{width:110px;margin-bottom:6px}
+.msm{width:150px;margin:6px auto 2px;animation:bob 2.4s ease-in-out infinite;transform-origin:50% 100%}
+.lbhero .mimg{width:180px;margin-bottom:6px;animation:bob 3s ease-in-out infinite;transform-origin:50% 100%}
 .lbhero{text-align:center;margin:2px 0 10px}
 .streakbanner{display:flex;align-items:center;gap:14px;padding:10px 14px;margin:0 0 16px;border:var(--b3) solid var(--edge);background:var(--card);color:var(--ink)}
-.streakbanner .mimg{width:64px;margin:0;flex:none}
+.streakbanner .mimg{width:100px;margin:0;flex:none;animation:bob 2.6s ease-in-out infinite}
 .streakbanner b{font-family:var(--pixel);font-size:calc(11px * var(--ps));display:block;margin-bottom:4px}
 .streakbanner span{font-family:var(--body);font-size:calc(16px * var(--bs));color:var(--ink-2)}
-#mpop{position:fixed;left:10px;bottom:calc(10px + env(safe-area-inset-bottom));width:104px;z-index:59;pointer-events:none;
+#mpop{position:fixed;left:10px;bottom:calc(10px + env(safe-area-inset-bottom));width:min(38vw,170px);z-index:59;pointer-events:none;
   transform:translateY(120%) rotate(-6deg);opacity:0;visibility:hidden;
   transition:transform .35s cubic-bezier(.2,.9,.3,1.3),opacity .2s,visibility 0s linear .35s}
 #mpop.show{transform:none;opacity:1;visibility:visible;transition-delay:0s}
 #mpop .mimg{width:100%}
-@media(max-width:420px){.mlogo{width:38px;height:38px}#mpop{width:84px}}
+@media(max-width:420px){.mlogo{width:52px;height:52px}}
 @media (prefers-reduced-motion:reduce){#mpop{transition:opacity .2s,visibility 0s linear .2s}}
 
 /* ---------- catalog list ---------- */
@@ -1187,6 +1218,7 @@ html:not([data-theme="gamified"]) .thopt{border-radius:calc(var(--r) * .8)}
     <!-- ============ LOOK UP ============ -->
     <section id="v-add" role="tabpanel" aria-labelledby="tab-add">
       <div class="center">
+        <div id="lookBuddy"></div>
         <p class="eyebrow">Acquisitions</p>
         <h2 class="title">File a <em>new word</em></h2>
         <p class="lede">Definitions, pronunciation and example sentences come from a live dictionary. One lookup makes one card.</p>
@@ -1208,6 +1240,7 @@ html:not([data-theme="gamified"]) .thopt{border-radius:calc(var(--r) * .8)}
 
     <!-- ============ CATALOG ============ -->
     <section id="v-catalog" role="tabpanel" aria-labelledby="tab-catalog" hidden>
+      <div id="catBuddy"></div>
       <p class="eyebrow">The drawer</p>
       <h2 class="title">Everything <em>on file</em></h2>
       <p class="lede">Sorted by whatever you like. Suspend a card to keep it without studying it.</p>
@@ -1247,6 +1280,10 @@ html:not([data-theme="gamified"]) .thopt{border-radius:calc(var(--r) * .8)}
     <div class="btnrow"><button class="btn primary" id="thDone" type="button">Done</button></div>
   </div>
 </div>
+<div class="unmodal" id="lkModal" style="z-index:10000" hidden>
+  <div class="unbox lkbox" role="dialog" aria-modal="true" aria-label="Word lookup"><div id="lkBody"></div></div>
+</div>
+
 <div class="unmodal" id="unModal" hidden>
   <div class="unbox" role="dialog" aria-modal="true" aria-labelledby="unTitle">
     <h3 id="unTitle">Pick a username</h3>
@@ -1491,7 +1528,59 @@ async function onLoggedIn(session){
   save(); renderSuggest(); render();
   go(state.cards.length && queue().total ? "study" : "add");
   if(!state.usernameChosen) openUsernameModal({ first:true, prefill: state.usernamePrefill || "" });
+  try{ const pw = localStorage.getItem("vocario.pendingLookup"); if(pw){ localStorage.removeItem("vocario.pendingLookup"); openLookupSheet(pw); } }catch(e){}
 }
+async function openLookupSheet(word){
+  const modal = $("#lkModal"), body = $("#lkBody");
+  modal.hidden = false;
+  body.innerHTML = `${mimg("think","msm")}<p class="hint" style="text-align:center">Looking up “${esc(word)}”…</p>`;
+  let entry;
+  try{ entry = await lookupWord(word); }
+  catch(err){
+    const off = err && err.message === "offline";
+    body.innerHTML = `${mimg(off ? "sleep" : "ask","msm")}<h3>${off ? "Couldn't reach the dictionary" : "Couldn't find “" + esc(word) + "”"}</h3>
+      <p class="hint">${off ? "Check your connection and try again." : "Check the spelling, or try the base form of the word."}</p>
+      <div class="btnrow"><button class="btn" data-lk="close">Close</button></div>`;
+    return;
+  }
+  ui.lk = entry;
+  drawLookupSheet(false);
+}
+function drawLookupSheet(saved){
+  const entry = ui.lk; if(!entry) return;
+  const exists = saved || state.cards.some(c => c.word.toLowerCase() === entry.word.toLowerCase());
+  const ms = entry.meanings.slice(0, 2);
+  $("#lkBody").innerHTML = `
+    ${mimg(saved ? "happy" : "read", "msm")}
+    <h3>${esc(entry.word)} ${entry.ipa ? `<span class="ipa">${esc(entry.ipa)}</span>` : ""}</h3>
+    ${ms.map(m => `<p class="lkdef"><span class="p">${esc(m.pos || "")}</span>${esc(m.definition)}</p>`).join("")}
+    <div class="btnrow">
+      ${saved ? `<button class="btn" disabled>Saved ✓ +${POINTS_PER_CARD} pts</button>`
+        : exists ? `<button class="btn" disabled>Already in your drawer</button>`
+        : `<button class="btn primary" data-lk="save">Save to Vocario</button>`}
+      <button class="btn" data-lk="share">Share</button>
+      <button class="btn ghost" data-lk="close">Close</button>
+    </div>`;
+}
+document.addEventListener("click", e => {
+  const modal = $("#lkModal"); if(!modal || modal.hidden) return;
+  if(e.target === modal){ modal.hidden = true; return; }
+  const b = e.target.closest("[data-lk]"); if(!b) return;
+  const k = b.dataset.lk, entry = ui.lk;
+  if(k === "close"){ modal.hidden = true; return; }
+  if(!entry) return;
+  if(k === "save"){
+    const r = addCard(entry);
+    if(!r.dup){ fillSynonyms(r.card, entry); popPoints(POINTS_PER_CARD); logPoints(POINTS_PER_CARD); render(); }
+    drawLookupSheet(!r.dup);
+  }
+  if(k === "share"){
+    const m = entry.meanings[0] || {};
+    VocarioShare.open({ word: entry.word, pos: m.pos || "", definition: m.definition || "",
+      username: state.usernameChosen ? state.displayName : "", look: { theme: look.theme, mode: look.mode } });
+  }
+});
+document.addEventListener("keydown", e => { if(e.key === "Escape"){ const m = $("#lkModal"); if(m && !m.hidden) m.hidden = true; } });
 function onLoggedOut(){
   state.cards = [];
   ui.currentId = null;
@@ -1696,14 +1785,93 @@ function toast(msg, actionLabel, action){
   clearTimeout(toast._t);
   toast._t = setTimeout(()=>t.classList.remove("show"), actionLabel ? 7000 : 3200);
 }
+/* Phone lookups arrive as  ?lookup=word  (iPhone Shortcut)  or  ?text=word  (Android Share menu). */
+function wordFromShared(raw){
+  let w = String(raw || "").trim().replace(/^[\s"'“”‘’(\[]+|[\s"'“”‘’.,;:!?)\]]+$/g, "");
+  return w.split(/\s+/).slice(0, 3).join(" ").slice(0, 40);
+}
+(function readSharedWord(){
+  try{
+    const q = new URLSearchParams(location.search);
+    const w = wordFromShared(q.get("lookup") || q.get("text") || "");
+    if(w) localStorage.setItem("vocario.pendingLookup", w);
+    if(q.has("lookup") || q.has("text") || q.has("url") || q.has("title")) history.replaceState(null, "", location.pathname + location.hash);
+  }catch(e){}
+})();
 const mimg = (n, cls="", alt="") => `<img class="mimg ${cls}" src="mascot/${n}.png" alt="${alt}" draggable="false">`;
 function popMascot(name){
   const el = $("#mpop"); if(!el) return;
+  return; // every page has its own talking bunny now
   el.innerHTML = mimg(name);
   el.classList.remove("show"); void el.offsetWidth; el.classList.add("show");
   clearTimeout(popMascot._t); popMascot._t = setTimeout(() => el.classList.remove("show"), 1500);
 }
 setTimeout(() => ["oops","think","happy","dance","gem"].forEach(n => { new Image().src = "mascot/" + n + ".png"; }), 2500);
+
+/* ---------- the bunny buddy: big, talkative, tappable ---------- */
+const BUDDY_LINES = {
+  idle:  { pose:"read",   lines:["Go on, guess. I won't judge. (I will.)","Brain on? Cool. Flip the card.","I read the whole dictionary. Your turn.","Think hard. I'm watching."] },
+  front: { pose:"think",  lines:["Hmm… you know this one. Probably.","Take your time. Not too much though.","Don't peek. I see you."] },
+  back:  { pose:"ask",    lines:["So… were you right? Be honest.","Grade yourself. I trust you. Barely.","Be real with me. Again, Hard, Good or Easy?"] },
+  r1:    { pose:"oops",   lines:["Again? Ouch. It happens to the best of us.","Brutal. You'll see it again soon, don't worry.","That word is now your nemesis."], anim:"shake" },
+  r2:    { pose:"think",  lines:["Hard, huh? Respect for the honesty.","Wobbly but alive. Nice.","Close one. It'll stick next time."], anim:"wiggle" },
+  r3:    { pose:"happy",  lines:["Good! Look at you, being smart.","Nailed it. Easy, right? …Right?","That's the stuff. Keep going!"], anim:"hop" },
+  r4:    { pose:"dance",  lines:["EASY?! Show-off. I love it.","Genius alert! Do a little dance!","Absolutely cooked that one."], anim:"spin" },
+  done:  { pose:"party",  lines:["All done! You absolute legend.","Deck cleared. Go touch some grass."], anim:"spin" },
+  look:  { pose:"wave",   lines:["Type any word. I'll fetch it!","Got a tricky word? Feed me.","New word? Ooh, give it here."] },
+  busy:  { pose:"think",  lines:["Digging through the dictionary…","One sec, flipping pages…"] },
+  filed: { pose:"gem",    lines:["Filed! Another gem in the drawer.","Got it. Nice find!"], anim:"hop" },
+  dupe:  { pose:"happy",  lines:["Already got that one. Great taste though."] },
+  miss:  { pose:"ask",    lines:["Hmm, never heard of it. Spelling?","Couldn't find that. Try the base word?"], anim:"wiggle" },
+  catalog:{ pose:"read",  lines:["Look at all those words. Fancy!","Your drawer. I organised it. (I didn't.)","Suspend a card if it's driving you mad."] },
+  desk:  { pose:"streak", lines:["Stats time! Numbers don't lie.","Keep that streak alive. Please.","Settings are boring. Streaks are cool."] },
+  board: { pose:"trophy", lines:["Who's on top this week? Hmm?","Climb the board. I believe in you.","Points = bragging rights."] },
+  tap:   { pose:null,     lines:["Hehe, that tickles!","Boop!","Again! Again!","I'm supposed to be working here.","Stop poking, study!","You're the best, you know that?","Fun fact: bunnies can't blush. I'm blushing."] }
+};
+const TAP_POSES = ["happy","dance","wave","gem","party","streak","trophy","think","ask","read"];
+const TAP_ANIMS = ["hop","spin","wiggle","hop"];
+const pick = a => a[Math.floor(Math.random()*a.length)];
+ui.buddy = null;
+function setBuddy(key, opt){
+  const d = BUDDY_LINES[key] || BUDDY_LINES.idle; opt = opt || {};
+  ui.buddy = { key, pose: opt.pose || d.pose || pick(TAP_POSES), line: opt.line || pick(d.lines), anim: opt.anim !== undefined ? opt.anim : (d.anim || "") };
+  paintBuddies(true);
+  clearTimeout(setBuddy._sleep);
+  setBuddy._sleep = setTimeout(() => {
+    if(document.hidden) return;
+    ui.buddy = { key:"sleep", pose:"sleep", line:"zzz… tap me to wake me up.", anim:"" }; paintBuddies(false);
+  }, 45000);
+}
+const CTX_DEFAULT = { study:"idle", look:"look", catalog:"catalog", desk:"desk", board:"board" };
+function ctxBuddy(ctx, key, opt){
+  if(ui.buddyCtx !== ctx || !ui.buddy){
+    const k = key || CTX_DEFAULT[ctx] || "idle", d = BUDDY_LINES[k];
+    ui.buddy = { key:k, pose:(opt && opt.pose) || d.pose, line:(opt && opt.line) || pick(d.lines), anim:"" };
+  }
+  ui.buddyCtx = ctx;
+}
+function buddyHTML(){
+  if(!ui.buddy) ui.buddy = { key:"idle", pose:BUDDY_LINES.idle.pose, line:pick(BUDDY_LINES.idle.lines), anim:"" };
+  const b = ui.buddy;
+  return `<div class="buddy ${b.anim ? "a-"+b.anim : ""}" data-buddy="1">${mimg(b.pose,"","Vocario bunny — tap me")}<div class="bub" role="status">${esc(b.line)}</div></div>`;
+}
+function paintBuddies(animate){
+  const b = ui.buddy; if(!b) return;
+  document.querySelectorAll(".buddy").forEach(el => {
+    const img = el.querySelector(".mimg"), bub = el.querySelector(".bub");
+    if(img) img.src = "mascot/" + b.pose + ".png";
+    if(bub){ bub.textContent = b.line; bub.style.animation = "none"; void bub.offsetWidth; bub.style.animation = ""; }
+    el.classList.remove("a-hop","a-shake","a-spin","a-wiggle"); void el.offsetWidth;
+    if(animate && b.anim) el.classList.add("a-" + b.anim);
+  });
+}
+document.addEventListener("click", e => {
+  const img = e.target.closest(".buddy .mimg");
+  if(img){ setBuddy("tap", { pose: pick(TAP_POSES), anim: pick(TAP_ANIMS) }); return; }
+  const lg = e.target.closest(".mlogo");
+  if(lg){ lg.classList.remove("a-wiggle"); void lg.offsetWidth; lg.classList.add("a-wiggle"); setBuddy("tap", { pose: pick(TAP_POSES), anim: pick(TAP_ANIMS) }); }
+});
+setTimeout(() => TAP_POSES.concat(["oops","sleep"]).forEach(n => { new Image().src = "mascot/" + n + ".png"; }), 3000);
 const icon = {
   sound:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 8.5a5 5 0 0 1 0 7"/></svg>',
   trash:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M9 7V5h6v2M7 7l1 12h8l1-12"/></svg>',
@@ -1838,6 +2006,7 @@ function answer(rating){
   ui.tick++; ui.flipped = false; ui.currentId = null; ui.ahead = false; ui.typedGuess = ""; ui.verdict = null;
   save(); render();
   popPoints(POINTS_PER_REVIEW);
+  setBuddy("r" + (rating >= 1 && rating <= 4 ? rating : 3));
   popMascot({1:"oops",2:"think",3:"happy",4:"dance"}[rating] || "happy");
   logPoints(POINTS_PER_REVIEW);
 }
@@ -2202,6 +2371,7 @@ function renderStudy(){
       <span class="counts"><b class="c-new">${q.fresh.length} new</b> · <b class="c-lrn">${q.learn.length} learning</b> · <b class="c-due">${q.rev.length} due</b></span>
       <span>${stateLabel}${card.lapses ? " · " + card.lapses + " lapse" + (card.lapses>1?"s":"") : ""}</span>
     </div>
+    ${(ctxBuddy("study"), buddyHTML())}
     <div class="studyopts">
       <button type="button" class="chip ${S().dir==="w2d" ? "on" : ""}" data-act="opt" data-k="dir" aria-pressed="${S().dir==="w2d"}" title="Show the word first and guess the meaning, instead of the other way round">Show word first</button>
       <button type="button" class="chip ${S().typed && S().dir==="d2w" ? "on" : ""}" data-act="opt" data-k="typed" aria-pressed="${!!(S().typed && S().dir==="d2w")}" ${S().dir==="w2d" ? "disabled" : ""} title="${S().dir==="w2d" ? "Turn off “Show word first” to type your answers" : "Type the word; spelling is checked before you grade yourself"}">Type your answer</button>
@@ -2226,12 +2396,13 @@ function renderStudy(){
         <button class="btn" data-act="check">Check</button>
       </div>
       <p class="tapme">Enter to check · Space to reveal</p>
-    ` : `<div class="tapbun">${mimg("think")}<p class="tapme" style="font-size:12px;color:var(--tap);animation:sp2 1.4s ease-in-out infinite">▼ TAP THE CARD TO REVEAL ▼</p></div>`}
+    ` : `<p class="tapme" style="font-size:12px;color:var(--tap);animation:sp2 1.4s ease-in-out infinite">▼ TAP THE CARD TO REVEAL ▼</p>`}
   `;
   if(typed) setTimeout(()=>{ const g=$("#guess"); if(g) g.focus(); },0);
 }
 
 function renderCatalog(){
+  { const cb=$("#catBuddy"); if(cb && (!cb.firstChild || ui.buddyCtx!=="catalog")){ ctxBuddy("catalog", "catalog", state.cards.length ? null : {pose:"sleep",line:"Empty drawer. Go file a word!"}); cb.innerHTML = buddyHTML(); } }
   const term = ($("#filter").value || "").toLowerCase().trim();
   const sort = $("#sort").value;
   let list = state.cards.filter(c =>
@@ -2310,6 +2481,7 @@ function renderDesk(){
       <button data-act="username">${state.usernameChosen ? "Change" : "Pick one"}</button>
     </div>
 
+    ${(ctxBuddy("desk"), buddyHTML())}
     <div class="streakbanner">${mimg("streak")}<div><b>${streak ? streak + "-day streak" : "No streak yet"}</b><span>${streak ? "Keep it burning — review a card every day." : "Review a card today to light your first flame."}</span></div></div>
 
     <div class="grid4">
@@ -2342,6 +2514,20 @@ function renderDesk(){
     <label class="opt">Play audio on reveal <span class="note">Uses the dictionary recording when there is one.</span>
       <input type="checkbox" ${S().autoAudio?"checked":""} data-set="autoAudio"></label>
 
+    <h3 class="sec">On your phone</h3>
+    <details class="phonehelp"><summary>Look up words from any page on your phone</summary>
+      <h4>Android (Chrome)</h4>
+      <ol><li>Open Vocario in Chrome, tap the ⋮ menu, then <b>Install app</b> (or Add to Home screen).</li>
+      <li>On any page, select a word, tap <b>⋮ / Share</b>, then choose <b>Vocario</b>.</li>
+      <li>A popup shows the meaning, with a button to save it.</li></ol>
+      <h4>iPhone (free Shortcut)</h4>
+      <ol><li>Open the <b>Shortcuts</b> app, tap <b>+</b>, name it <b>Vocario</b>.</li>
+      <li>Add <b>URL Encode</b> (input: Shortcut Input), then <b>Text</b>: <code>https://vocab-elevate.pages.dev/?lookup=</code> followed by the URL Encoded Text.</li>
+      <li>Add <b>Open URLs</b> with that Text.</li>
+      <li>Tap ⓘ, turn on <b>Show in Share Sheet</b>, and set accepted types to <b>Text</b> only.</li>
+      <li>Select a word in Safari, tap <b>Share → Vocario</b>.</li></ol>
+    </details>
+
     <h3 class="sec">Your data</h3>
     <div class="btnrow">
       <button class="btn" data-act="export">Export backup</button>
@@ -2365,12 +2551,13 @@ async function renderBoard(){
   }
   const rows = (data || []).filter(r => r.points > 0 || (r.user_id ? r.user_id === state.userId : r.display_name === state.displayName));
   const medals = ["🥇","🥈","🥉"];
+  const myRank = rows.findIndex(r => r.user_id ? r.user_id === state.userId : r.display_name === state.displayName);
 
   el.innerHTML = `
     <p class="eyebrow">Weekly ranking</p>
     <h2 class="title">The <em>leaderboard</em></h2>
     <p class="lede">Everyone's points earned since Monday. Resets fresh every week.</p>
-    ${rows.length ? `<div class="lbhero">${mimg("trophy")}</div>` : ""}
+    ${rows.length ? (ctxBuddy("board","board",myRank>=0 ? {pose: myRank<3?"trophy":"happy", line: myRank===0 ? "You're #1! Don't get comfy." : "You're #"+(myRank+1)+" this week. Keep climbing!"} : null), buddyHTML()) : ""}
     <div class="lbrows">
       ${rows.length ? rows.map((r,i) => `
         <div class="lbrow ${(r.user_id ? r.user_id === state.userId : r.display_name === state.displayName) ? "me" : ""}">
@@ -2398,6 +2585,7 @@ function render(){
     $("#v-" + t.dataset.view).hidden = !on;
   });
   if(ui.view === "study") renderStudy();
+  if(ui.view === "add"){ const lb=$("#lookBuddy"); if(lb && (!lb.firstChild || ui.buddyCtx !== "look")){ ctxBuddy("look"); lb.innerHTML = buddyHTML(); } }
   if(ui.view === "catalog") renderCatalog();
   if(ui.view === "desk") renderDesk();
   if(ui.view === "board") renderBoard();
@@ -2411,6 +2599,7 @@ function flip(){
   if(ui.flipped) return;
   ui.flipped = true;
   const card = state.cards.find(c => c.id === ui.currentId);
+  setBuddy("back");
   render();
   if(card && S().autoAudio) speak(card);
 }
@@ -2438,7 +2627,8 @@ async function fileWords(input){
   if(!words.length) return;
   const out = $("#lookupOut"), btn = $("#lookupBtn");
   ui.busy = true; btn.disabled = true; btn.textContent = "…";
-  out.innerHTML = `${mimg("think","msm")}<p class="hint" style="text-align:center">Looking up${words.length===1 ? " \u201c"+esc(words[0])+"\u201d" : ""}\u2026</p>`;
+  out.innerHTML = `<p class="hint" style="text-align:center">Looking up${words.length===1 ? " \u201c"+esc(words[0])+"\u201d" : ""}\u2026</p>`;
+  setBuddy("busy");
   const added = [], dupes = [], failed = [];
 
   for(let i=0;i<words.length;i++){
@@ -2458,6 +2648,7 @@ async function fileWords(input){
   $("#q").value = "";
   save(); renderSuggest();
   if(added.length){ popPoints(added.length * POINTS_PER_CARD); popMascot("gem"); logPoints(added.length * POINTS_PER_CARD); }
+  setBuddy(added.length ? "filed" : (dupes.length ? "dupe" : "miss"));
 
   if(added.length === 1 && !failed.length && !dupes.length){
     out.innerHTML = filedPreview(added[0]);
@@ -2465,7 +2656,7 @@ async function fileWords(input){
     const bits = [];
     if(added.length) bits.push(`<p class="hint"><b>Filed ${added.length}:</b> ${added.map(c=>esc(c.word)).join(", ")}</p>`);
     if(dupes.length) bits.push(`<p class="hint">Already on file: ${dupes.map(c=>esc(c.word)).join(", ")}</p>`);
-    if(failed.length && !added.length) bits.push(mimg(failed.every(f=>f.why==="offline") ? "sleep" : "ask", "msm"));
+    if(failed.length && !added.length && failed.every(f=>f.why==="offline")) setBuddy("miss",{pose:"sleep",line:"Can't reach the dictionary. Check your connection?"});
     if(failed.length) bits.push(`<p class="hint" style="color:var(--orange-dk)">Couldn't file: ${failed.map(f=>esc(f.w) + (f.why==="offline" ? " (no connection)" : "")).join(", ")}</p>`);
     if(added.length) bits.push(`<div class="btnrow" style="margin-top:12px"><button class="btn primary" data-go="study">Study now</button><button class="btn" data-go="catalog">See the drawer</button></div>`);
     out.innerHTML = bits.join("") || `<p class="hint">Nothing filed.</p>`;
@@ -2724,7 +2915,7 @@ $("#lookupForm").addEventListener("submit", e => {
 });
 
 document.addEventListener("keydown", e => {
-  if(document.querySelector(".vsh-ov") || !$("#thModal").hidden) return; // share window is open — leave the keys alone
+  if(document.querySelector(".vsh-ov") || !$("#thModal").hidden || !$("#lkModal").hidden) return; // share window is open — leave the keys alone
   const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName);
   if(typing){
     if(e.key === "Enter" && e.target.id === "guess"){ e.preventDefault(); checkTyped(); }
