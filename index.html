@@ -240,6 +240,7 @@ h2.title em{color:var(--orange-dk)}
 /* ---------- phone lookup sheet + help ---------- */
 .lkbox{max-width:380px;width:100%;text-align:center;max-height:92vh;overflow:auto}
 .lkbox h3{margin:0 0 2px}
+.lkbox .xtra{text-align:left}
 .lkbox .lkdef{text-align:left;margin:8px 0 0;font-family:var(--body);font-size:calc(18px * var(--bs))}
 .lkbox .lkdef .p{font-family:var(--pixel);font-size:calc(8px * var(--ps));margin-right:6px;opacity:.8}
 .lkbox .btnrow{justify-content:center;margin-top:14px}
@@ -249,6 +250,17 @@ h2.title em{color:var(--orange-dk)}
 .phonehelp ol{margin:4px 0 0;padding-left:20px;font-family:var(--body);font-size:calc(17px * var(--bs));line-height:1.35}
 .phonehelp code{background:var(--field);padding:1px 5px;word-break:break-all}
 
+/* ---------- extras ---------- */
+.xtra{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.xtra .eg{margin:2px 0 0;font-size:calc(15px * var(--bs));line-height:1.35}
+.xl{display:block;font-family:var(--pixel);font-size:calc(7px * var(--ps));text-transform:uppercase;letter-spacing:.04em;color:var(--ink-2);margin-bottom:3px}
+.xrow{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.xrow .xl{width:100%;margin-bottom:0}
+.xw{font-family:var(--body);font-size:calc(14px * var(--bs));padding:1px 7px;border:2px solid var(--edge);background:var(--field);color:var(--ink)}
+.xrow:nth-of-type(2) .xw{background:var(--card)}
+@media(max-width:620px){.card3d{aspect-ratio:3/4}}
+.defs{position:relative;scrollbar-width:thin}
+.face.back .pad::after{content:"";position:absolute;left:0;right:0;bottom:0;height:22px;background:linear-gradient(to top,var(--card),transparent);pointer-events:none}
 /* ---------- bold, interactive bunny ---------- */
 @keyframes bob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-6px) rotate(1.2deg)}}
 @keyframes hop{0%{transform:translateY(0) scale(1,1)}20%{transform:translateY(0) scale(1.12,.88)}50%{transform:translateY(-34px) scale(.94,1.08)}80%{transform:translateY(0) scale(1.1,.9)}100%{transform:translateY(0) scale(1,1)}}
@@ -268,7 +280,9 @@ h2.title em{color:var(--orange-dk)}
 .bub{position:relative;display:block;margin:8px 12px 0 0;padding:5px 10px;border:var(--b3) solid var(--edge);background:var(--card);color:var(--ink);font-family:var(--body);font-size:calc(13px * var(--bs));line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;animation:bubin .3s ease-out;transform-origin:100% 50%}
 .studysplit .studyopts{justify-content:flex-start;margin:0;gap:6px}
 .studysplit .chip{font-size:calc(9px * var(--ps));padding:7px 8px}
-.streakbanner.bsplit{align-items:end;padding:10px 12px}
+.streakbanner.bsplit{display:grid;grid-template-columns:minmax(0,1fr) clamp(56px,17%,72px);align-items:center;justify-content:space-between;padding:10px 12px}
+.streakbanner.bsplit .bl{text-align:left}
+.streakbanner.bsplit .br{justify-self:end}
 .streakbanner .bl b{margin-bottom:4px}
 .mlogo.a-wiggle{animation:wiggle .5s ease-in-out 2}
 #mpop.show .mimg{animation:hop .6s ease-out}
@@ -281,7 +295,7 @@ h2.title em{color:var(--orange-dk)}
 .auth-badge img{width:min(52vw,190px);animation:bob 3s ease-in-out infinite;transform-origin:50% 100%;height:auto;filter:drop-shadow(3px 3px 0 var(--dropsh))}
 .tapbun{display:flex;flex-direction:column;align-items:center;gap:4px;margin-top:6px}
 .tapbun .mimg{width:70px}
-.msm{width:150px;margin:6px auto 2px;animation:bob 2.4s ease-in-out infinite;transform-origin:50% 100%}
+.msm{width:92px;margin:4px auto 2px;animation:bob 2.4s ease-in-out infinite;transform-origin:50% 100%}
 .lbhero .mimg{width:180px;margin-bottom:6px;animation:bob 3s ease-in-out infinite;transform-origin:50% 100%}
 .lbhero{text-align:center;margin:2px 0 10px}
 .streakbanner{display:flex;align-items:center;gap:14px;padding:10px 14px;margin:0 0 16px;border:var(--b3) solid var(--edge);background:var(--card);color:var(--ink)}
@@ -1551,8 +1565,13 @@ async function openLookupSheet(word){
       <div class="btnrow"><button class="btn" data-lk="close">Close</button></div>`;
     return;
   }
-  ui.lk = entry;
+  ui.lk = entry; ui.lkSaved = false;
   drawLookupSheet(false);
+  enrichEntry(entry).then(() => {                       // examples, synonyms… arrive a moment later
+    const c = state.cards.find(x => x.word.toLowerCase() === entry.word.toLowerCase());
+    if(c && c.meanings === entry.meanings){ save(); pushCard(c); }
+    if(ui.lk === entry && !$("#lkModal").hidden) drawLookupSheet(ui.lkSaved);
+  });
 }
 function drawLookupSheet(saved){
   const entry = ui.lk; if(!entry) return;
@@ -1562,6 +1581,7 @@ function drawLookupSheet(saved){
     ${mimg(saved ? "happy" : "read", "msm")}
     <h3>${esc(entry.word)} ${entry.ipa ? `<span class="ipa">${esc(entry.ipa)}</span>` : ""}</h3>
     ${ms.map(m => `<p class="lkdef"><span class="p">${esc(m.pos || "")}</span>${esc(m.definition)}</p>`).join("")}
+    ${extrasHTML(entry.meanings[0])}
     <div class="btnrow">
       ${saved ? `<button class="btn" disabled>Saved ✓ +${POINTS_PER_CARD} pts</button>`
         : exists ? `<button class="btn" disabled>Already in your drawer</button>`
@@ -1580,6 +1600,7 @@ document.addEventListener("click", e => {
   if(k === "save"){
     const r = addCard(entry);
     if(!r.dup){ fillSynonyms(r.card, entry); popPoints(POINTS_PER_CARD); logPoints(POINTS_PER_CARD); render(); }
+    ui.lkSaved = !r.dup;
     drawLookupSheet(!r.dup);
   }
   if(k === "share"){
@@ -2129,24 +2150,84 @@ async function lookupWord(raw){
 
 /** Synonyms come from Datamuse in a separate request. They're fetched AFTER the
  *  card is filed so they never hold up the definition. */
-async function fetchSynonyms(w){
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 3000);
-  try{
-    const r = await fetch("https://api.datamuse.com/words?max=4&rel_syn=" + encodeURIComponent(w), { signal: controller.signal });
-    if(!r.ok) return [];
-    return (await r.json()).map(x => x.word).slice(0,4);
-  }catch(e){ return []; }
-  finally{ clearTimeout(timer); }
+/* ---------- extras: 2 examples, synonyms, antonyms, related words (all free APIs) ---------- */
+const XTRA_MAX = 5;
+async function getJSON(url, ms){
+  const c = new AbortController(), t = setTimeout(() => c.abort(), ms || 3500);
+  try{ const r = await fetch(url, { signal:c.signal }); if(!r.ok) return null; return await r.json(); }
+  catch(e){ return null; }
+  finally{ clearTimeout(t); }
 }
+const uniqWords = (arr, skip) => { const seen = new Set(skip || []); const out = [];
+  for(const w of arr){ const k = String(w||"").toLowerCase().trim(); if(!k || seen.has(k) || /\s/.test(k)) continue; seen.add(k); out.push(k); } return out; };
+/** keep only sentences that actually use the word (or a form of it) */
+function usesWord(sentence, w){ const stem = w.toLowerCase().replace(/(e|y|s|ed|ing)$/,"").slice(0, Math.max(4, w.length-2)); return sentence.toLowerCase().includes(stem); }
+async function fetchExtras(w){
+  const q = encodeURIComponent(w);
+  const [syn, ant, ml, trg, wik, dapi] = await Promise.all([
+    getJSON("https://api.datamuse.com/words?max=10&rel_syn=" + q),
+    getJSON("https://api.datamuse.com/words?max=10&rel_ant=" + q),
+    getJSON("https://api.datamuse.com/words?max=15&ml=" + q),
+    getJSON("https://api.datamuse.com/words?max=10&rel_trg=" + q),
+    getJSON("https://en.wiktionary.org/api/rest_v1/page/definition/" + q, 4000),
+    getJSON("https://api.dictionaryapi.dev/api/v2/entries/en/" + q, 3000)
+  ]);
+  const me = w.toLowerCase();
+  const synonyms = uniqWords((syn||[]).map(x=>x.word), [me]).slice(0, XTRA_MAX);
+  const antonyms = uniqWords((ant||[]).map(x=>x.word), [me].concat(synonyms)).slice(0, XTRA_MAX);
+  const related  = uniqWords([].concat((ml||[]).map(x=>x.word), (trg||[]).map(x=>x.word)), [me].concat(synonyms, antonyms)).slice(0, XTRA_MAX);
+  const ex = [];
+  const addEx = t => { t = wiktText(t); if(t && t.length >= 15 && t.length <= 220 && usesWord(t, w) && !ex.some(e => e.toLowerCase() === t.toLowerCase())) ex.push(t); };
+  for(const g of ((wik && wik.en) || [])) for(const d of (g.definitions || [])){
+    for(const pe of (d.parsedExamples || [])) addEx(pe.example);
+    for(const e of (d.examples || [])) addEx(e);
+  }
+  if(Array.isArray(dapi)) for(const e of dapi) for(const m of (e.meanings || [])) for(const d of (m.definitions || [])) addEx(d.example);
+  return { synonyms, antonyms, related, examples: ex };
+}
+/** merge fetched extras into the card/entry's first meaning (never overwrites what's already there) */
+function applyExtras(m, x){
+  if(!m || !x) return false;
+  const keep = (old, add) => uniqWords([].concat(old || [], add || [])).slice(0, XTRA_MAX);
+  m.synonyms = keep(m.synonyms, x.synonyms);
+  m.antonyms = keep(m.antonyms, x.antonyms);
+  m.related  = keep(m.related, x.related);
+  const ex = [];
+  for(const e of [m.example].concat(m.examples || [], x.examples || [])) if(e && !ex.some(y => y.toLowerCase() === e.toLowerCase())) ex.push(e);
+  m.examples = ex.slice(0, 2);
+  if(!m.example && m.examples[0]) m.example = m.examples[0];
+  m.enriched = true;
+  return true;
+}
+/** used while a lookup is still on screen: wait a moment so the result is complete */
+async function enrichEntry(entry){
+  const m = entry && entry.meanings && entry.meanings[0];
+  if(!m || m.enriched) return;
+  try{ applyExtras(m, await fetchExtras(entry.word)); }catch(e){}
+}
+const extrasInFlight = new Set();
+/** used for background fills (word lists, older cards): fetch, save, redraw */
 async function fillSynonyms(card, entry){
   const m = card.meanings && card.meanings[0];
-  if(!m || (m.synonyms && m.synonyms.length)) return;
-  const syn = await fetchSynonyms(card.word);
-  if(!syn.length || !state.cards.includes(card)) return; // none found, or the card was deleted meanwhile
-  m.synonyms = syn;
-  save(); pushCard(card);
-  if(entry && entry._cache && entry._key) dictCachePut(entry._key, entry); // keep the cached copy complete too
+  if(!m || m.enriched || extrasInFlight.has(card.id)) return;
+  extrasInFlight.add(card.id);
+  try{
+    const x = await fetchExtras(card.word);
+    if(!state.cards.includes(card)) return;
+    applyExtras(m, x); save(); pushCard(card);
+    if(entry && entry._cache && entry._key) dictCachePut(entry._key, entry);
+    if(ui.view === "study" && ui.flipped && ui.currentId === card.id) render();
+    if(ui.view === "catalog") renderCatalog();
+  }catch(e){}
+  finally{ extrasInFlight.delete(card.id); }
+}
+function extrasHTML(m){
+  if(!m) return "";
+  const row = (l, a) => a && a.length ? `<div class="xrow"><span class="xl">${l}</span>${a.map(w => `<span class="xw">${esc(w)}</span>`).join("")}</div>` : "";
+  const ex = (m.examples && m.examples.length ? m.examples : (m.example ? [m.example] : [])).slice(0, 2);
+  const exH = ex.length ? `<div class="xex"><span class="xl">Example${ex.length > 1 ? "s" : ""}</span>${ex.map(e => `<p class="eg">“${esc(e)}”</p>`).join("")}</div>` : "";
+  const h = exH + row("Synonyms", m.synonyms) + row("Antonyms", m.antonyms) + row("Related", m.related);
+  return h ? `<div class="xtra">${h}</div>` : "";
 }
 
 /** The main dictionary — richest data (audio, IPA, examples). */
@@ -2332,10 +2413,10 @@ function blank(text, word){
 function cardFaces(card){
   const m = card.meanings[0] || {pos:"", definition:"(no definition on file)", example:""};
   const word = `<h2 class="hw">${esc(card.word)}</h2>${card.ipa ? `<div class="ipa">${esc(card.ipa)}</div>` : ""}`;
-  const defsFull = card.meanings.length ? `<div class="defs">${card.meanings.map(x=>`
+  const defsFull = card.meanings.length ? `<div class="defs">${card.meanings.map((x,i)=>`
       <p class="def"><span class="p">${esc(x.pos)}</span>${esc(x.definition)}</p>
-      ${x.synonyms && x.synonyms.length ? `<p class="syn">syn. ${x.synonyms.map(esc).join(", ")}</p>` : ""}
-    `).join("")}</div>` : `<div class="defs"><p class="def">No definition saved for this card — try deleting and re-filing it.</p></div>`;
+      ${i > 0 && x.synonyms && x.synonyms.length ? `<p class="syn">syn. ${x.synonyms.map(esc).join(", ")}</p>` : ""}
+    `).join("")}${extrasHTML(card.meanings[0])}</div>` : `<div class="defs"><p class="def">No definition saved for this card — try deleting and re-filing it.</p></div>`;
   const stamps = (card.history||[]).length ? `<div class="stamps">${
       card.history.slice(-8).map(t => `<span class="stmp">${new Date(t).toLocaleDateString(undefined,{day:"2-digit",month:"short"}).toUpperCase()}</span>`).join("")
     }</div>` : "";
@@ -2613,6 +2694,7 @@ function flip(){
   ui.flipped = true;
   const card = state.cards.find(c => c.id === ui.currentId);
   setBuddy("back");
+  if(card) fillSynonyms(card);
   render();
   if(card && S().autoAudio) speak(card);
 }
@@ -2648,6 +2730,7 @@ async function fileWords(input){
     if(words.length > 1) out.innerHTML = `<p class="hint">Filing ${i+1} of ${words.length} — <b>${esc(words[i])}</b></p>`;
     try{
       const entry = await lookupWord(words[i]);
+      if(words.length === 1) await enrichEntry(entry);   // one word: wait a moment so the result is complete
       const r = addCard(entry);
       (r.dup ? dupes : added).push(r.card);
       if(!r.dup) fillSynonyms(r.card, entry); // background — doesn't hold up the card
@@ -2686,7 +2769,7 @@ function filedPreview(c){
         <button class="iconbtn" data-speak="${c.id}" style="margin-left:auto">${icon.sound}</button>
       </div>
       ${c.meanings.map(m=>`<p class="def" style="margin:6px 0 0"><span class="p">${esc(m.pos)}</span>${esc(m.definition)}</p>`).join("")}
-      ${c.meanings[0].example ? `<p class="eg" style="line-height:1.5">“${esc(c.meanings[0].example)}”</p>` : ""}
+      ${extrasHTML(c.meanings[0])}
     </div>
     <div class="btnrow" style="margin-top:14px;justify-content:center">
       <button class="btn primary" data-go="study">Study now</button>
