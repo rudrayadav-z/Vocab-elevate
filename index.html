@@ -2238,7 +2238,7 @@ async function lookupWord(raw){
 /** Synonyms come from Datamuse in a separate request. They're fetched AFTER the
  *  card is filed so they never hold up the definition. */
 /* ---------- extras: 2 examples, synonyms, antonyms, related words (all free APIs) ---------- */
-const XTRA_MAX = 5;
+const XTRA_MAX = 3;      // synonyms / similar / antonyms / related: at most 3 each
 async function getJSON(url, ms){
   const c = new AbortController(), t = setTimeout(() => c.abort(), ms || 3500);
   try{ const r = await fetch(url, { signal:c.signal }); if(!r.ok) return null; return await r.json(); }
@@ -2262,7 +2262,10 @@ async function fetchExtras(w){
   const me = w.toLowerCase();
   const synonyms = uniqWords((syn||[]).map(x=>x.word), [me]).slice(0, XTRA_MAX);
   const antonyms = uniqWords((ant||[]).map(x=>x.word), [me].concat(synonyms)).slice(0, XTRA_MAX);
-  const related  = uniqWords([].concat((ml||[]).map(x=>x.word), (trg||[]).map(x=>x.word)), [me].concat(synonyms, antonyms)).slice(0, XTRA_MAX);
+  // no true synonyms in the free thesaurus? then the closest-meaning words go in a separate "Similar" row
+  const mlw = uniqWords((ml||[]).map(x=>x.word), [me].concat(synonyms, antonyms));
+  const similar = synonyms.length ? [] : mlw.slice(0, XTRA_MAX);
+  const related  = uniqWords([].concat(mlw, (trg||[]).map(x=>x.word)), [me].concat(synonyms, antonyms, similar)).slice(0, XTRA_MAX);
   const ex = [];
   const addEx = t => { t = wiktText(t); if(t && t.length >= 15 && t.length <= 220 && usesWord(t, w) && !ex.some(e => e.toLowerCase() === t.toLowerCase())) ex.push(t); };
   for(const g of ((wik && wik.en) || [])) for(const d of (g.definitions || [])){
@@ -2270,7 +2273,14 @@ async function fetchExtras(w){
     for(const e of (d.examples || [])) addEx(e);
   }
   if(Array.isArray(dapi)) for(const e of dapi) for(const m of (e.meanings || [])) for(const d of (m.definitions || [])) addEx(d.example);
-  return { synonyms, antonyms, related, examples: ex };
+  return { synonyms, antonyms, similar, related, examples: ex };
+}
+/** true while a card/entry still needs its extras fetched (cards enriched before the "Similar" row existed and
+ *  that came back without synonyms get one more try) */
+function xNeeds(m){
+  if(!m) return false;
+  if(!m.enriched) return true;
+  return m.enriched !== 2 && !(m.synonyms && m.synonyms.length) && !(m.similar && m.similar.length);
 }
 /** merge fetched extras into the card/entry's first meaning (never overwrites what's already there) */
 function applyExtras(m, x){
@@ -2279,24 +2289,25 @@ function applyExtras(m, x){
   m.synonyms = keep(m.synonyms, x.synonyms);
   m.antonyms = keep(m.antonyms, x.antonyms);
   m.related  = keep(m.related, x.related);
+  m.similar  = m.synonyms.length ? [] : keep(m.similar, x.similar);
   const ex = [];
   for(const e of [m.example].concat(m.examples || [], x.examples || [])) if(e && !ex.some(y => y.toLowerCase() === e.toLowerCase())) ex.push(e);
   m.examples = ex.slice(0, 2);
   if(!m.example && m.examples[0]) m.example = m.examples[0];
-  m.enriched = true;
+  m.enriched = 2;
   return true;
 }
 /** used while a lookup is still on screen: wait a moment so the result is complete */
 async function enrichEntry(entry){
   const m = entry && entry.meanings && entry.meanings[0];
-  if(!m || m.enriched) return;
+  if(!xNeeds(m)) return;
   try{ applyExtras(m, await fetchExtras(entry.word)); }catch(e){}
 }
 const extrasInFlight = new Set();
 /** used for background fills (word lists, older cards): fetch, save, redraw */
 async function fillSynonyms(card, entry){
   const m = card.meanings && card.meanings[0];
-  if(!m || m.enriched || extrasInFlight.has(card.id)) return;
+  if(!xNeeds(m) || extrasInFlight.has(card.id)) return;
   extrasInFlight.add(card.id);
   try{
     const x = await fetchExtras(card.word);
@@ -2310,10 +2321,10 @@ async function fillSynonyms(card, entry){
 }
 function extrasHTML(m){
   if(!m) return "";
-  const row = (l, a) => a && a.length ? `<div class="xrow"><span class="xl">${l}</span>${a.map(w => `<span class="xw">${esc(w)}</span>`).join("")}</div>` : "";
+  const row = (l, a) => a && a.length ? `<div class="xrow"><span class="xl">${l}</span>${a.slice(0, XTRA_MAX).map(w => `<span class="xw">${esc(w)}</span>`).join("")}</div>` : "";
   const ex = (m.examples && m.examples.length ? m.examples : (m.example ? [m.example] : [])).slice(0, 2);
   const exH = ex.length ? `<div class="xex"><span class="xl">Example${ex.length > 1 ? "s" : ""}</span>${ex.map(e => `<p class="eg">“${esc(e)}”</p>`).join("")}</div>` : "";
-  const h = exH + row("Synonyms", m.synonyms) + row("Antonyms", m.antonyms) + row("Related", m.related);
+  const h = exH + row("Synonyms", m.synonyms) + row("Similar", (m.synonyms && m.synonyms.length) ? [] : m.similar) + row("Antonyms", m.antonyms) + row("Related", m.related);
   return h ? `<div class="xtra">${h}</div>` : "";
 }
 
@@ -2876,9 +2887,9 @@ function filedPreview(c, opt){
 function topUpCard(card, entry){
   const cm = card.meanings && card.meanings[0];
   const em = entry && entry.meanings && entry.meanings[0];
-  if(!cm || cm.enriched) return true;
-  if(em && em.enriched){
-    applyExtras(cm, { synonyms:em.synonyms, antonyms:em.antonyms, related:em.related, examples:em.examples });
+  if(!cm || !xNeeds(cm)) return true;
+  if(em && em.enriched === 2){
+    applyExtras(cm, { synonyms:em.synonyms, antonyms:em.antonyms, similar:em.similar, related:em.related, examples:em.examples });
     save(); pushCard(card);
     return true;
   }
