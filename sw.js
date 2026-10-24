@@ -1,5 +1,5 @@
 /* Offline shell. Reviews work with no connection; lookups need one. */
-const CACHE = "vocario-v13";
+const CACHE = "vocario-v14";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-192.png", "./mascot/logo.png", "./mascot/wave.png"];
 
 self.addEventListener("install", e => {

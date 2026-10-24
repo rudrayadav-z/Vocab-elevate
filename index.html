@@ -118,7 +118,9 @@ nav.tabs::-webkit-scrollbar{display:none}
   box-shadow:inset 0 3px 0 var(--tabglow);
 }
 .tab:hover{color:var(--ink);background:var(--hover)}
-.tab[aria-selected="true"]{background:var(--yellow);color:var(--onY);transform:translateY(3px)}
+.tab[aria-selected="true"]{background:var(--panel);color:var(--ink);z-index:2;
+  margin-bottom:calc(-1 * var(--b4));padding-bottom:calc(12px + var(--b4));
+  box-shadow:inset 0 5px 0 var(--yellow)}
 .tab .n{display:inline-block;margin-left:3px;padding:0 4px;background:var(--orange);color:#fff;font-size:calc(7.5px * var(--ps))}
 .tab[aria-selected="true"] .n{background:var(--orange-dk);color:#fff}
 @media(max-width:480px){
@@ -283,16 +285,24 @@ h2.title em{color:var(--orange-dk)}
 @keyframes spin{0%{transform:translateY(0) rotate(0)}50%{transform:translateY(-30px) rotate(180deg) scale(1.08)}100%{transform:translateY(0) rotate(360deg)}}
 @keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-9deg)}75%{transform:rotate(9deg)}}
 @keyframes bubin{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.06);opacity:1}100%{transform:scale(1)}}
-.bsplit{display:grid;grid-template-columns:minmax(0,1fr) clamp(84px,27%,124px);gap:10px;align-items:end;margin:0 0 12px}
-.bsplit>.bl{min-width:0}
+.bsplit{display:grid;grid-template-columns:minmax(0,1fr) clamp(84px,27%,124px);gap:0 10px;align-items:end;margin:0 0 12px}
+.bubrow{grid-column:1 / -1;display:flex;justify-content:flex-end;min-width:0}
+.bsplit>.bl{min-width:0;align-self:start}
+.streakbanner.bsplit>.bl{align-self:center}
 .bsplit .eyebrow{margin-top:0}
-.br{align-self:end;-webkit-tap-highlight-color:transparent}
+.br{align-self:end;display:flex;flex-direction:column;align-items:flex-end;-webkit-tap-highlight-color:transparent}
 .br .mimg{width:100%;margin:0;cursor:pointer;animation:bob 3s ease-in-out infinite;transform-origin:50% 100%;filter:drop-shadow(2px 2px 0 var(--dropsh))}
 .br.a-hop .mimg{animation:hop .6s ease-out}
 .br.a-shake .mimg{animation:shake .6s ease-out}
 .br.a-spin .mimg{animation:spin .8s ease-in-out}
 .br.a-wiggle .mimg{animation:wiggle .5s ease-in-out 2}
-.bub{position:relative;display:block;margin:8px 12px 0 0;padding:5px 10px;border:var(--b3) solid var(--edge);background:var(--card);color:var(--ink);font-family:var(--body);font-size:calc(13px * var(--bs));line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;animation:bubin .3s ease-out;transform-origin:100% 50%}
+.bub{position:relative;display:block;width:max-content;max-width:min(74vw,340px);
+  margin:0 6px 7px 0;padding:6px 11px;border:var(--b3) solid var(--edge);border-radius:calc(var(--r) * .8);
+  background:var(--card);color:var(--ink);font-family:var(--body);font-size:calc(15px * var(--bs));line-height:1.25;
+  animation:bubin .3s ease-out;transform-origin:100% 100%;box-shadow:var(--shadow-sm)}
+.bub::after{content:"";position:absolute;right:30px;top:100%;width:10px;height:10px;margin-top:calc(-1 * var(--b3));
+  background:var(--card);border-right:var(--b3) solid var(--edge);border-bottom:var(--b3) solid var(--edge);transform:rotate(45deg)}
+.streakbanner .bub{display:none}
 .studysplit .studyopts{justify-content:flex-start;margin:0;gap:6px}
 .studysplit .chip{font-size:calc(9px * var(--ps));padding:7px 8px}
 .streakbanner.bsplit{display:grid;grid-template-columns:minmax(0,1fr) clamp(56px,17%,72px);align-items:center;justify-content:space-between;padding:10px 12px}
@@ -425,6 +435,10 @@ h3.sec{font-family:var(--pixel);font-size:calc(10px * var(--ps));letter-spacing:
 .btn:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--edge)}
 .btn.primary{background:var(--orange);border-color:var(--edge);color:#fff}
 .btn.primary:hover{background:var(--orange-dk)}
+.btn.b-share{background:var(--blue-dk);border-color:var(--edge);color:#fff}
+.btn.b-share:hover{filter:brightness(1.08)}
+.btn.b-drawer{background:var(--green-dk);border-color:var(--edge);color:#fff}
+.btn.b-drawer:hover{filter:brightness(1.08)}
 .btn.ghost{background:none;box-shadow:none}
 .btnrow{display:flex;gap:8px;flex-wrap:wrap}
 label.opt{display:flex;align-items:center;gap:10px;padding:10px 0;color:var(--ink);font-size:calc(18px * var(--bs));
@@ -435,12 +449,12 @@ label.opt .note{display:block;font-size:calc(13px * var(--bs));color:var(--ink-2
 
 /* ---------- leaderboard ---------- */
 .lbrows{display:grid;gap:8px}
-.lbrow{display:flex;align-items:center;gap:12px;background:var(--panel2);border:var(--b3) solid var(--edge);
+.lbrow{display:flex;align-items:center;gap:12px;min-width:0;background:var(--panel2);border:var(--b3) solid var(--edge);
   padding:10px 14px;box-shadow:var(--shadow-sm)}
 .lbrow.me{background:var(--yellow);color:var(--onY);border-color:var(--edge)}
 .lbrow .rank{font-family:var(--pixel);font-size:calc(12px * var(--ps));width:34px;flex:none;text-align:center;color:var(--ink-2)}
 .lbrow .medal{font-size:calc(20px * var(--bs));width:34px;flex:none;text-align:center}
-.lbrow .name{flex:1;font-family:var(--body);font-size:calc(20px * var(--bs));overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lbrow .name{flex:1;min-width:0;font-family:var(--body);font-size:calc(20px * var(--bs));overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lbrow .pts{font-family:var(--pixel);font-size:calc(11px * var(--ps));color:var(--orange-dk);flex:none}
 .lbrow.me .pts{color:var(--orange-dk)}
 
@@ -529,7 +543,7 @@ html[data-theme="minimal"] .g3{background:#3f3f46}
 html[data-theme="minimal"] .g4{background:#18181b}
 html[data-theme="minimal"][data-mode="dark"] .g4{background:#52525b}
 html[data-theme="minimal"] .tab{border-bottom:0}
-html[data-theme="minimal"] .tab[aria-selected="true"]{background:var(--panel);color:var(--orange);transform:none;box-shadow:inset 0 2px 0 var(--orange)}
+html[data-theme="minimal"] .tab[aria-selected="true"]{background:var(--panel);color:var(--ink);box-shadow:inset 0 3px 0 var(--orange)}
 html[data-theme="minimal"] .lbrow.me .pts{color:var(--orange)}
 html[data-theme="minimal"] .hud .lvl{color:var(--ink);background:var(--panel2)}
 html[data-theme="minimal"] .hud .streak{background:var(--panel2);color:var(--ink)}
@@ -571,7 +585,7 @@ html[data-theme="elegant"] .face::after{display:none}
 html[data-theme="elegant"] .panel{border-top:3px double var(--yellow-dk)}
 html[data-theme="elegant"] .hw{font-style:italic;font-weight:600}
 html[data-theme="elegant"] .eyebrow,html[data-theme="elegant"] h3.sec,html[data-theme="elegant"] .head .sub{letter-spacing:.14em;font-weight:500}
-html[data-theme="elegant"] .tab[aria-selected="true"]{transform:none;box-shadow:inset 0 3px 0 var(--yellow-dk)}
+html[data-theme="elegant"] .tab[aria-selected="true"]{box-shadow:inset 0 4px 0 var(--yellow-dk)}
 html[data-theme="elegant"] .g1{background:var(--orange)}
 html[data-theme="elegant"] .g2{background:#a67f2b}
 html[data-theme="elegant"] .g3{background:#4f7356}
@@ -616,7 +630,7 @@ html[data-theme="flamboyant"] .logo em{text-shadow:3px 3px 0 var(--yellow)}
 html[data-theme="flamboyant"] .face::before{height:14px;background:linear-gradient(90deg,#ff3d9a,#ff9f1c,#ffd23f)}
 html[data-theme="flamboyant"] .face.back::before{background:linear-gradient(90deg,#2de2a6,#3dd5f3,#b266ff)}
 html[data-theme="flamboyant"] .face::after{border-radius:50%}
-html[data-theme="flamboyant"] .tab[aria-selected="true"]{background:linear-gradient(135deg,var(--yellow),#ffb347)}
+html[data-theme="flamboyant"] .tab[aria-selected="true"]{background:var(--panel);box-shadow:inset 0 5px 0 var(--orange)}
 html[data-theme="flamboyant"] .hud .streak{background:linear-gradient(135deg,#ff3d9a,#ff9f1c)}
 html[data-theme="flamboyant"] .hud .lvl{background:linear-gradient(135deg,#b266ff,#ff3d9a);color:#fff}
 html[data-theme="flamboyant"] .xpbar i{background:linear-gradient(90deg,#2de2a6,#3dd5f3)}
@@ -676,7 +690,7 @@ html[data-theme="pastel"] .logo em{text-shadow:none;color:var(--orange)}
 html[data-theme="pastel"] .face::before{height:8px;background:linear-gradient(90deg,#8ec9ea,#c5b7f3)}
 html[data-theme="pastel"] .face.back::before{background:linear-gradient(90deg,#9bdcc6,#ffdcab)}
 html[data-theme="pastel"] .face::after{border-radius:50%}
-html[data-theme="pastel"] .tab[aria-selected="true"]{background:var(--blue);color:var(--onY);transform:none;box-shadow:inset 0 3px 0 var(--blue-dk)}
+html[data-theme="pastel"] .tab[aria-selected="true"]{background:var(--panel);color:var(--ink);box-shadow:inset 0 5px 0 var(--blue-dk)}
 html[data-theme="pastel"] .hud .lvl{background:var(--purple);color:#2f2450}
 html[data-theme="pastel"] .hud .streak{background:var(--orange);color:#fff}
 html[data-theme="pastel"] .xpbar i{background:linear-gradient(90deg,#8ec9ea,#9bdcc6)}
@@ -1310,11 +1324,9 @@ html:not([data-theme="gamified"]) .thopt{border-radius:calc(var(--r) * .8)}
     <!-- ============ LOOK UP ============ -->
     <section id="v-add" role="tabpanel" aria-labelledby="tab-add">
       <div class="center">
-        <div class="bsplit" id="lookSplit"><div class="bl">
+        <div class="bsplit" id="lookSplit"><div class="bubslot bubrow"></div><div class="bl">
           <p class="eyebrow">Acquisitions</p>
           <h2 class="title">File a <em>new word</em></h2>
-          <p class="lede">Definitions, pronunciation and example sentences come from a live dictionary. One lookup makes one card.</p>
-          <div class="bubslot"></div>
         </div><div class="brslot"></div></div>
 
         <form id="lookupForm" class="lookup" autocomplete="off">
@@ -1322,7 +1334,6 @@ html:not([data-theme="gamified"]) .thopt{border-radius:calc(var(--r) * .8)}
           <input id="q" name="q" placeholder="ephemeral" spellcheck="false" autocapitalize="none">
           <button type="submit" id="lookupBtn">File it</button>
         </form>
-        <p class="hint">Paste a whole list to file many at once — separate with commas or new lines. <b>Enter</b> to file.</p>
 
         <div class="suggest" id="suggest" hidden></div>
         <div id="lookupOut" style="margin-top:22px"></div>
@@ -1334,11 +1345,10 @@ html:not([data-theme="gamified"]) .thopt{border-radius:calc(var(--r) * .8)}
 
     <!-- ============ CATALOG ============ -->
     <section id="v-catalog" role="tabpanel" aria-labelledby="tab-catalog" hidden>
-      <div class="bsplit" id="catSplit"><div class="bl">
+      <div class="bsplit" id="catSplit"><div class="bubslot bubrow"></div><div class="bl">
         <p class="eyebrow">The drawer</p>
         <h2 class="title">Everything <em>on file</em></h2>
         <p class="lede">Sorted by whatever you like. Suspend a card to keep it without studying it.</p>
-        <div class="bubslot"></div>
       </div><div class="brslot"></div></div>
       <div class="toolbar">
         <div class="field">
@@ -1958,8 +1968,9 @@ function ctxBuddy(ctx, key, opt){
 function buddyState(){ if(!ui.buddy) ui.buddy = { key:"idle", pose:BUDDY_LINES.idle.pose, line:pick(BUDDY_LINES.idle.lines), anim:"" }; return ui.buddy; }
 function buddyBub(){ const b = buddyState(); return `<span class="bub" role="status" title="${esc(b.line)}">${esc(b.line)}</span>`; }
 function buddyImg(){ const b = buddyState(); return `<div class="br buddy ${b.anim ? "a-"+b.anim : ""}" data-buddy="1">${mimg(b.pose,"","Vocario bunny — tap me")}</div>`; }
+function buddyBubRow(){ return `<div class="bubrow">${buddyBub()}</div>`; }
 /** left column = whatever the page puts there, then the one-line bubble; right column = the bunny */
-function buddySplit(leftHTML, cls){ return `<div class="bsplit ${cls||""}"><div class="bl">${leftHTML||""}${buddyBub()}</div>${buddyImg()}</div>`; }
+function buddySplit(leftHTML, cls){ return `<div class="bsplit ${cls||""}">${buddyBubRow()}<div class="bl">${leftHTML||""}</div>${buddyImg()}</div>`; }
 function paintBuddies(animate){
   const b = ui.buddy; if(!b) return;
   document.querySelectorAll(".bub").forEach(bub => {
@@ -1974,9 +1985,9 @@ function paintBuddies(animate){
 /** static pages (Look up, Catalog) have slots; fill them when the page's mood changes */
 function mountBuddy(root, ctx, key, opt){
   if(!root) return;
-  const bs = root.querySelector(".bubslot"), rs = root.querySelector(".brslot");
-  if(!bs || !rs) return;
-  if(!bs.firstChild || ui.buddyCtx !== ctx){ ctxBuddy(ctx, key, opt); bs.innerHTML = buddyBub(); rs.innerHTML = buddyImg(); }
+  const rs = root.querySelector(".brslot"), bs = root.querySelector(".bubslot");
+  if(!rs) return;
+  if(!rs.firstChild || ui.buddyCtx !== ctx){ ctxBuddy(ctx, key, opt); rs.innerHTML = buddyImg(); if(bs) bs.innerHTML = buddyBub(); }
 }
 document.addEventListener("click", e => {
   const img = e.target.closest(".br .mimg");
@@ -2540,10 +2551,10 @@ function renderStudy(){
       <span class="counts"><b class="c-new">${q.fresh.length} new</b> · <b class="c-lrn">${q.learn.length} learning</b> · <b class="c-due">${q.rev.length} due</b></span>
       <span>${stateLabel}${card.lapses ? " · " + card.lapses + " lapse" + (card.lapses>1?"s":"") : ""}</span>
     </div>
-    ${(ctxBuddy("study"), "")}<div class="bsplit studysplit"><div class="bl"><div class="studyopts">
+    ${(ctxBuddy("study"), "")}<div class="bsplit studysplit">${buddyBubRow()}<div class="bl"><div class="studyopts">
       <button type="button" class="chip ${S().dir==="w2d" ? "on" : ""}" data-act="opt" data-k="dir" aria-pressed="${S().dir==="w2d"}" title="Show the word first and guess the meaning, instead of the other way round">Show word first</button>
       <button type="button" class="chip ${S().typed && S().dir==="d2w" ? "on" : ""}" data-act="opt" data-k="typed" aria-pressed="${!!(S().typed && S().dir==="d2w")}" ${S().dir==="w2d" ? "disabled" : ""} title="${S().dir==="w2d" ? "Turn off “Show word first” to type your answers" : "Type the word; spelling is checked before you grade yourself"}">Type your answer</button>
-    </div>${buddyBub()}</div>${buddyImg()}</div>
+    </div></div>${buddyImg()}</div>
     <div class="stage">
       <div class="card3d ${ui.flipped ? "flip" : ""}" id="card3d" role="button" tabindex="0" aria-label="Flashcard, activate to reveal">
         <div class="face">${f.front}</div>
@@ -2649,7 +2660,7 @@ function renderDesk(){
       <button data-act="username">${state.usernameChosen ? "Change" : "Pick one"}</button>
     </div>
 
-    ${(ctxBuddy("desk"), "")}<div class="bsplit streakbanner"><div class="bl"><b>${streak ? streak + "-day streak" : "No streak yet"}</b><span>${streak ? "Keep it burning — review a card every day." : "Review a card today to light your first flame."}</span>${buddyBub()}</div>${buddyImg()}</div>
+    ${(ctxBuddy("desk"), "")}<div class="bsplit streakbanner"><div class="bl"><b>${streak ? streak + "-day streak" : "No streak yet"}</b><span>${streak ? "Keep it burning — review a card every day." : "Review a card today to light your first flame."}</span></div>${buddyImg()}</div>
 
     <div class="grid4">
       <div class="stat"><div class="k">Level</div><div class="v">${score.level} <small>${score.into}/${score.need} xp</small></div></div>
@@ -2721,9 +2732,9 @@ async function renderBoard(){
   const myRank = rows.findIndex(r => r.user_id ? r.user_id === state.userId : r.display_name === state.displayName);
 
   el.innerHTML = `
-    ${(ctxBuddy("board","board",myRank>=0 ? {pose: myRank<3?"trophy":"happy", line: myRank===0 ? "#1! Don't get comfy." : "You're #"+(myRank+1)+". Keep climbing!"} : null), "")}<div class="bsplit"><div class="bl"><p class="eyebrow">Weekly ranking</p>
+    ${(ctxBuddy("board","board",myRank>=0 ? {pose: myRank<3?"trophy":"happy", line: myRank===0 ? "#1! Don't get comfy." : "You're #"+(myRank+1)+". Keep climbing!"} : null), "")}<div class="bsplit">${buddyBubRow()}<div class="bl"><p class="eyebrow">Weekly ranking</p>
     <h2 class="title">The <em>leaderboard</em></h2>
-    <p class="lede">Everyone's points earned since Monday. Resets fresh every week.</p>${buddyBub()}</div>${buddyImg()}</div>
+    <p class="lede">Everyone's points earned since Monday. Resets fresh every week.</p></div>${buddyImg()}</div>
     <div class="lbrows">
       ${rows.length ? rows.map((r,i) => `
         <div class="lbrow ${(r.user_id ? r.user_id === state.userId : r.display_name === state.displayName) ? "me" : ""}">
@@ -2835,7 +2846,7 @@ async function fileWords(input){
     if(failed.length && !added.length && failed.every(f=>f.why==="offline")) setBuddy("miss",{pose:"sleep",line:"No connection?"});
     if(failed.length) bits.push(`<p class="hint" style="color:var(--orange-dk)">Couldn't file: ${failed.map(f=>esc(f.w) + (f.why==="offline" ? " (no connection)" : "")).join(", ")}</p>`);
     bits.push(cards.map(r => filedPreview(r.card, { dup:r.dup, compact:true })).join(""));
-    if(cards.length) bits.push(`<div class="btnrow" style="margin-top:14px;justify-content:center"><button class="btn primary" data-go="study">Study now</button><button class="btn" data-go="catalog">See the drawer</button></div>`);
+    if(cards.length) bits.push(`<div class="btnrow" style="margin-top:14px;justify-content:center"><button class="btn primary" data-go="study">Study now</button><button class="btn b-drawer" data-go="catalog">See the drawer</button></div>`);
     out.innerHTML = bits.join("") || `<p class="hint">Nothing filed.</p>`;
   }
   render();
@@ -2855,8 +2866,8 @@ function filedPreview(c, opt){
     </div>
     ${opt.compact ? "" : `<div class="btnrow" style="margin-top:14px;justify-content:center">
       <button class="btn primary" data-go="study">Study now</button>
-      <button class="btn" data-act="share" data-id="${esc(c.id)}">Share</button>
-      <button class="btn" data-go="catalog">See the drawer</button>
+      <button class="btn b-share" data-act="share" data-id="${esc(c.id)}">Share</button>
+      <button class="btn b-drawer" data-go="catalog">See the drawer</button>
     </div>`}
   </div>`;
 }
