@@ -170,7 +170,6 @@ h2.title em{color:var(--orange-dk)}
   width:10px;height:10px;background:var(--edge)}
 .face.back{transform:rotateY(180deg)}
 .pad{position:absolute;inset:0;padding:22px 16px 24px 16px;display:flex;flex-direction:column;height:100%}
-.cardno{position:absolute;top:14px;right:12px;font-family:var(--pixel);font-size:calc(8px * var(--ps));color:var(--faint)}
 .pos{position:absolute;top:14px;left:16px;font-family:var(--pixel);font-size:calc(8px * var(--ps));letter-spacing:.04em;
   text-transform:uppercase;color:#fff;background:var(--purple-dk);padding:2px 6px}
 .prompt{margin:auto 0;font-size:calc(clamp(16px,3.4vw,22px) * var(--bs));line-height:1.4;color:var(--ink);font-family:var(--body)}
@@ -2479,10 +2478,6 @@ function sayIt(word){
 /* ============================================================
    RENDER
    ============================================================ */
-function refNo(card){
-  let h = 0; for(const ch of card.id) h = (h*31 + ch.charCodeAt(0)) >>> 0;
-  return card.word.slice(0,3).toUpperCase() + " " + String(h % 900 + 100);
-}
 function blank(text, word){
   const stem = word.length > 5 ? word.slice(0, word.length - 2) : word;
   return esc(text).replace(new RegExp("\\b" + rx(stem) + "\\w*", "gi"), '<span class="blank"></span>');
@@ -2506,8 +2501,8 @@ function cardFaces(card){
 
   const d2w = S().dir === "d2w";
   return {
-    front: `<div class="pad"><span class="cardno">${esc(refNo(card))}</span>${d2w ? clue : `<div class="prompt" style="text-align:center">${word}</div>`}</div>`,
-    back:  `<div class="pad"><span class="cardno">${esc(refNo(card))}</span>${d2w ? word + defsFull : defsFull}${stamps}</div>
+    front: `<div class="pad">${d2w ? clue : `<div class="prompt" style="text-align:center">${word}</div>`}</div>`,
+    back:  `<div class="pad">${d2w ? word + defsFull : defsFull}${stamps}</div>
             <button class="speak" data-act="speak" title="Hear it (S)" aria-label="Hear pronunciation">${icon.sound}</button>`
   };
 }
@@ -2848,7 +2843,7 @@ async function fileWords(input){
 function filedPreview(c, opt){
   opt = opt || {};
   return `<div class="fadein${opt.compact ? " stackcard" : ""}">
-    <p class="eyebrow" style="text-align:center">${opt.dup ? "Already on file" : "Filed"} · ${esc(refNo(c))}</p>
+    <p class="eyebrow" style="text-align:center">${opt.dup ? "Already on file" : "Filed"}</p>
     <div class="filedcard">
       <div class="fhead">
         <span class="fw">${esc(c.word)}</span>
