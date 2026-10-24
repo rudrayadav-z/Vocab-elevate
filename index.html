@@ -263,6 +263,9 @@ h2.title em{color:var(--orange-dk)}
 .filedcard .xw{font-size:calc(17px * var(--bs));padding:2px 9px}
 .filedcard .xl{font-size:calc(8.5px * var(--ps))}
 
+.stackcard{margin-top:14px}
+.stackcard .eyebrow{margin-bottom:4px}
+
 /* ---------- extras ---------- */
 .xtra{margin-top:8px;display:flex;flex-direction:column;gap:6px}
 .xtra .eg{margin:2px 0 0;font-size:calc(15px * var(--bs));line-height:1.35}
@@ -2798,7 +2801,7 @@ async function fileWords(input){
   ui.busy = true; btn.disabled = true; btn.textContent = "…";
   out.innerHTML = `<p class="hint" style="text-align:center">Looking up${words.length===1 ? " \u201c"+esc(words[0])+"\u201d" : ""}\u2026</p>`;
   setBuddy("busy");
-  const added = [], dupes = [], failed = [];
+  const added = [], dupes = [], failed = [], cards = [];
 
   for(let i=0;i<words.length;i++){
     if(words.length > 1) out.innerHTML = `<p class="hint">Filing ${i+1} of ${words.length} — <b>${esc(words[i])}</b></p>`;
@@ -2807,7 +2810,15 @@ async function fileWords(input){
       if(words.length === 1) await enrichEntry(entry);   // one word: wait a moment so the result is complete
       const r = addCard(entry);
       (r.dup ? dupes : added).push(r.card);
-      if(!r.dup) fillSynonyms(r.card, entry); // background — doesn't hold up the card
+      cards.push({ card:r.card, dup:r.dup });
+      if(r.dup){
+        // already in the drawer: show it again, topping up anything it was filed without
+        if(!topUpCard(r.card, entry)){
+          if(words.length === 1) await fillSynonyms(r.card); else fillSynonyms(r.card);
+        }
+      } else {
+        fillSynonyms(r.card, entry); // background — doesn't hold up the card
+      }
     }catch(err){
       failed.push({ w: words[i], why: err.message });
     }
@@ -2820,22 +2831,24 @@ async function fileWords(input){
   if(added.length){ popPoints(added.length * POINTS_PER_CARD); popMascot("gem"); logPoints(added.length * POINTS_PER_CARD); }
   setBuddy(added.length ? "filed" : (dupes.length ? "dupe" : "miss"));
 
-  if(added.length === 1 && !failed.length && !dupes.length){
-    out.innerHTML = filedPreview(added[0]);
+  if(cards.length === 1 && !failed.length){
+    out.innerHTML = filedPreview(cards[0].card, { dup: cards[0].dup });
   } else {
     const bits = [];
     if(added.length) bits.push(`<p class="hint"><b>Filed ${added.length}:</b> ${added.map(c=>esc(c.word)).join(", ")}</p>`);
-    if(dupes.length) bits.push(`<p class="hint">Already on file: ${dupes.map(c=>esc(c.word)).join(", ")}</p>`);
+    if(dupes.length) bits.push(`<p class="hint"><b>Already on file:</b> ${dupes.map(c=>esc(c.word)).join(", ")}</p>`);
     if(failed.length && !added.length && failed.every(f=>f.why==="offline")) setBuddy("miss",{pose:"sleep",line:"No connection?"});
     if(failed.length) bits.push(`<p class="hint" style="color:var(--orange-dk)">Couldn't file: ${failed.map(f=>esc(f.w) + (f.why==="offline" ? " (no connection)" : "")).join(", ")}</p>`);
-    if(added.length) bits.push(`<div class="btnrow" style="margin-top:12px"><button class="btn primary" data-go="study">Study now</button><button class="btn" data-go="catalog">See the drawer</button></div>`);
+    bits.push(cards.map(r => filedPreview(r.card, { dup:r.dup, compact:true })).join(""));
+    if(cards.length) bits.push(`<div class="btnrow" style="margin-top:14px;justify-content:center"><button class="btn primary" data-go="study">Study now</button><button class="btn" data-go="catalog">See the drawer</button></div>`);
     out.innerHTML = bits.join("") || `<p class="hint">Nothing filed.</p>`;
   }
   render();
 }
-function filedPreview(c){
-  return `<div class="fadein">
-    <p class="eyebrow" style="text-align:center">Filed · ${esc(refNo(c))}</p>
+function filedPreview(c, opt){
+  opt = opt || {};
+  return `<div class="fadein${opt.compact ? " stackcard" : ""}">
+    <p class="eyebrow" style="text-align:center">${opt.dup ? "Already on file" : "Filed"} · ${esc(refNo(c))}</p>
     <div class="filedcard">
       <div class="fhead">
         <span class="fw">${esc(c.word)}</span>
@@ -2845,12 +2858,25 @@ function filedPreview(c){
       ${c.meanings.map(m=>`<p class="def"><span class="p">${esc(m.pos)}</span>${esc(m.definition)}</p>`).join("")}
       ${extrasHTML(c.meanings[0])}
     </div>
-    <div class="btnrow" style="margin-top:14px;justify-content:center">
+    ${opt.compact ? "" : `<div class="btnrow" style="margin-top:14px;justify-content:center">
       <button class="btn primary" data-go="study">Study now</button>
       <button class="btn" data-act="share" data-id="${esc(c.id)}">Share</button>
       <button class="btn" data-go="catalog">See the drawer</button>
-    </div>
+    </div>`}
   </div>`;
+}
+/** A word already in the drawer may have been filed before extras existed — fill in
+ *  whatever this fresh lookup knows that the saved card doesn't. */
+function topUpCard(card, entry){
+  const cm = card.meanings && card.meanings[0];
+  const em = entry && entry.meanings && entry.meanings[0];
+  if(!cm || cm.enriched) return true;
+  if(em && em.enriched){
+    applyExtras(cm, { synonyms:em.synonyms, antonyms:em.antonyms, related:em.related, examples:em.examples });
+    save(); pushCard(card);
+    return true;
+  }
+  return false;
 }
 
 /* ---------- data in and out ---------- */
