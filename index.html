@@ -769,6 +769,14 @@ html:not([data-theme="gamified"]) .hud .tbtn{border-radius:calc(var(--r) * .6)}
 .thopt i{display:flex;height:16px;gap:0;border:1px solid var(--edge);overflow:hidden}
 .thopt i u{flex:1;display:block}
 html:not([data-theme="gamified"]) .thopt{border-radius:calc(var(--r) * .8)}
+
+/* ---------- selected tab + its open panel share one colour that stands apart from the other tabs ---------- */
+html[data-mode="dark"]{--sel:color-mix(in srgb,var(--panel) 86%,#fff);--tabbg:color-mix(in srgb,var(--panel) 70%,#000)}
+html[data-mode="light"]{--sel:var(--panel);--tabbg:color-mix(in srgb,var(--panel2) 88%,#000)}
+html[data-mode] .panel{background:var(--sel)}
+html[data-mode] .tab[aria-selected="true"]{background:var(--sel)}
+html[data-mode] .tab:not([aria-selected="true"]){background:var(--tabbg)}
+html[data-mode] .tab:not([aria-selected="true"]):hover{background:var(--hover)}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
@@ -2237,7 +2245,7 @@ async function lookupWord(raw){
 
 /** Synonyms come from Datamuse in a separate request. They're fetched AFTER the
  *  card is filed so they never hold up the definition. */
-/* ---------- extras: 2 examples, synonyms, antonyms, related words (all free APIs) ---------- */
+/* ---------- extras: 2 examples, synonyms (or "similar" words), antonyms (all free APIs) ---------- */
 const XTRA_MAX = 3;      // synonyms / similar / antonyms / related: at most 3 each
 async function getJSON(url, ms){
   const c = new AbortController(), t = setTimeout(() => c.abort(), ms || 3500);
@@ -2251,11 +2259,10 @@ const uniqWords = (arr, skip) => { const seen = new Set(skip || []); const out =
 function usesWord(sentence, w){ const stem = w.toLowerCase().replace(/(e|y|s|ed|ing)$/,"").slice(0, Math.max(4, w.length-2)); return sentence.toLowerCase().includes(stem); }
 async function fetchExtras(w){
   const q = encodeURIComponent(w);
-  const [syn, ant, ml, trg, wik, dapi] = await Promise.all([
+  const [syn, ant, ml, wik, dapi] = await Promise.all([
     getJSON("https://api.datamuse.com/words?max=10&rel_syn=" + q),
     getJSON("https://api.datamuse.com/words?max=10&rel_ant=" + q),
     getJSON("https://api.datamuse.com/words?max=15&ml=" + q),
-    getJSON("https://api.datamuse.com/words?max=10&rel_trg=" + q),
     getJSON("https://en.wiktionary.org/api/rest_v1/page/definition/" + q, 4000),
     getJSON("https://api.dictionaryapi.dev/api/v2/entries/en/" + q, 3000)
   ]);
@@ -2265,7 +2272,6 @@ async function fetchExtras(w){
   // no true synonyms in the free thesaurus? then the closest-meaning words go in a separate "Similar" row
   const mlw = uniqWords((ml||[]).map(x=>x.word), [me].concat(synonyms, antonyms));
   const similar = synonyms.length ? [] : mlw.slice(0, XTRA_MAX);
-  const related  = uniqWords([].concat(mlw, (trg||[]).map(x=>x.word)), [me].concat(synonyms, antonyms, similar)).slice(0, XTRA_MAX);
   const ex = [];
   const addEx = t => { t = wiktText(t); if(t && t.length >= 15 && t.length <= 220 && usesWord(t, w) && !ex.some(e => e.toLowerCase() === t.toLowerCase())) ex.push(t); };
   for(const g of ((wik && wik.en) || [])) for(const d of (g.definitions || [])){
@@ -2273,7 +2279,7 @@ async function fetchExtras(w){
     for(const e of (d.examples || [])) addEx(e);
   }
   if(Array.isArray(dapi)) for(const e of dapi) for(const m of (e.meanings || [])) for(const d of (m.definitions || [])) addEx(d.example);
-  return { synonyms, antonyms, similar, related, examples: ex };
+  return { synonyms, antonyms, similar, examples: ex };
 }
 /** true while a card/entry still needs its extras fetched (cards enriched before the "Similar" row existed and
  *  that came back without synonyms get one more try) */
@@ -2288,7 +2294,6 @@ function applyExtras(m, x){
   const keep = (old, add) => uniqWords([].concat(old || [], add || [])).slice(0, XTRA_MAX);
   m.synonyms = keep(m.synonyms, x.synonyms);
   m.antonyms = keep(m.antonyms, x.antonyms);
-  m.related  = keep(m.related, x.related);
   m.similar  = m.synonyms.length ? [] : keep(m.similar, x.similar);
   const ex = [];
   for(const e of [m.example].concat(m.examples || [], x.examples || [])) if(e && !ex.some(y => y.toLowerCase() === e.toLowerCase())) ex.push(e);
@@ -2324,7 +2329,7 @@ function extrasHTML(m){
   const row = (l, a) => a && a.length ? `<div class="xrow"><span class="xl">${l}</span>${a.slice(0, XTRA_MAX).map(w => `<span class="xw">${esc(w)}</span>`).join("")}</div>` : "";
   const ex = (m.examples && m.examples.length ? m.examples : (m.example ? [m.example] : [])).slice(0, 2);
   const exH = ex.length ? `<div class="xex"><span class="xl">Example${ex.length > 1 ? "s" : ""}</span>${ex.map(e => `<p class="eg">“${esc(e)}”</p>`).join("")}</div>` : "";
-  const h = exH + row("Synonyms", m.synonyms) + row("Similar", (m.synonyms && m.synonyms.length) ? [] : m.similar) + row("Antonyms", m.antonyms) + row("Related", m.related);
+  const h = exH + row("Synonyms", m.synonyms) + row("Similar", (m.synonyms && m.synonyms.length) ? [] : m.similar) + row("Antonyms", m.antonyms);
   return h ? `<div class="xtra">${h}</div>` : "";
 }
 
@@ -2889,7 +2894,7 @@ function topUpCard(card, entry){
   const em = entry && entry.meanings && entry.meanings[0];
   if(!cm || !xNeeds(cm)) return true;
   if(em && em.enriched === 2){
-    applyExtras(cm, { synonyms:em.synonyms, antonyms:em.antonyms, similar:em.similar, related:em.related, examples:em.examples });
+    applyExtras(cm, { synonyms:em.synonyms, antonyms:em.antonyms, similar:em.similar, examples:em.examples });
     save(); pushCard(card);
     return true;
   }
