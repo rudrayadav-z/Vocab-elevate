@@ -310,6 +310,9 @@ h2.title em{color:var(--orange-dk)}
 .streakbanner.bsplit .br{justify-self:end}
 .streakbanner .bl b{margin-bottom:4px}
 .mlogo.a-wiggle{animation:wiggle .5s ease-in-out 2}
+.mlogo.a-spin{animation:spinlogo .8s ease-in-out}
+@keyframes spinlogo{to{transform:rotate(360deg)}}
+.br .mimg,.mlogo{touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 #mpop.show .mimg{animation:hop .6s ease-out}
 @media (prefers-reduced-motion:reduce){.mimg,.br .mimg,.bub{animation:none!important}}
 /* ---------- mascot ---------- */
@@ -452,8 +455,8 @@ label.opt .note{display:block;font-size:calc(13px * var(--bs));color:var(--ink-2
 .lbrow{display:flex;align-items:center;gap:12px;min-width:0;background:var(--panel2);border:var(--b3) solid var(--edge);
   padding:10px 14px;box-shadow:var(--shadow-sm)}
 .lbrow.me{background:var(--yellow);color:var(--onY);border-color:var(--edge)}
-.lbrow .rank{font-family:var(--pixel);font-size:calc(12px * var(--ps));width:34px;flex:none;text-align:center;color:var(--ink-2)}
-.lbrow .medal{font-size:calc(20px * var(--bs));width:34px;flex:none;text-align:center}
+.lbrow .rank{font-family:var(--pixel);font-size:calc(12px * var(--ps));width:44px;flex:none;text-align:center;color:var(--ink-2);display:flex;align-items:center;justify-content:center}
+.lbrow .rank.top{font-size:calc(20px * var(--bs));line-height:1;color:inherit}
 .lbrow .name{flex:1;min-width:0;font-family:var(--body);font-size:calc(20px * var(--bs));overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lbrow .pts{font-family:var(--pixel);font-size:calc(11px * var(--ps));color:var(--orange-dk);flex:none}
 .lbrow.me .pts{color:var(--orange-dk)}
@@ -1997,11 +2000,22 @@ function mountBuddy(root, ctx, key, opt){
   if(!rs) return;
   if(!rs.firstChild || ui.buddyCtx !== ctx){ ctxBuddy(ctx, key, opt); rs.innerHTML = buddyImg(); if(bs) bs.innerHTML = buddyBub(); }
 }
+/* single tap = new pose + small hop; double tap (two taps within 400 ms) = full 360° spin with a jump */
+let lastBuddyTap = 0;
 document.addEventListener("click", e => {
   const img = e.target.closest(".br .mimg");
-  if(img){ setBuddy("tap", { pose: pick(TAP_POSES), anim: pick(TAP_ANIMS) }); return; }
-  const lg = e.target.closest(".mlogo");
-  if(lg){ lg.classList.remove("a-wiggle"); void lg.offsetWidth; lg.classList.add("a-wiggle"); setBuddy("tap", { pose: pick(TAP_POSES), anim: pick(TAP_ANIMS) }); }
+  const lg = !img && e.target.closest(".mlogo");
+  if(!img && !lg) return;
+  const now = Date.now(), dbl = now - lastBuddyTap < 400;
+  lastBuddyTap = dbl ? 0 : now;
+  if(dbl){
+    if(lg){ lg.classList.remove("a-wiggle","a-spin"); void lg.offsetWidth; lg.classList.add("a-spin"); }
+    const b = ui.buddy || {};
+    setBuddy("tap", { pose: (b.pose && b.pose !== "sleep") ? b.pose : "happy", line: b.line, anim: "spin" });
+    return;
+  }
+  if(lg){ lg.classList.remove("a-wiggle","a-spin"); void lg.offsetWidth; lg.classList.add("a-wiggle"); }
+  setBuddy("tap", { pose: pick(TAP_POSES), anim: "hop" });
 });
 setTimeout(() => TAP_POSES.concat(["oops","sleep"]).forEach(n => { new Image().src = "mascot/" + n + ".png"; }), 3000);
 const icon = {
@@ -2754,8 +2768,7 @@ async function renderBoard(){
     <div class="lbrows">
       ${rows.length ? rows.map((r,i) => `
         <div class="lbrow ${(r.user_id ? r.user_id === state.userId : r.display_name === state.displayName) ? "me" : ""}">
-          <span class="rank">${i < 3 ? "" : "#" + (i+1)}</span>
-          <span class="medal">${medals[i] || ""}</span>
+          <span class="rank${i < 3 ? " top" : ""}">${i < 3 ? medals[i] : "#" + (i+1)}</span>
           <span class="name">${esc(r.display_name)}${(r.user_id ? r.user_id === state.userId : r.display_name === state.displayName) ? " (you)" : ""}</span>
           <span class="pts">${r.points} pts</span>
         </div>`).join("")
