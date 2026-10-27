@@ -110,6 +110,7 @@ nav.tabs{display:flex;gap:6px;margin-left:6px}
   transition:background .15s var(--ease),color .15s var(--ease)}
 .tab:hover{background:var(--hover);color:var(--ink)}
 .tab[aria-selected="true"]{background:var(--cobalt);color:var(--on-cobalt)}
+.tab .ti{display:none}
 .tab .n{background:var(--coral);color:#fff;font-size:12px;font-weight:700;padding:1px 7px;border-radius:999px;line-height:1.5}
 .tab .n:empty,.tab .n[data-zero]{display:none}
 .hud{margin-left:auto;display:flex;align-items:center;gap:12px}
@@ -515,6 +516,44 @@ label.opt .note{grid-column:1;font-size:14px;color:var(--ink-2)}
 .spin{animation:spinlogo 1s linear infinite;transform-origin:50% 50%}
 .fadein{animation:fi .3s var(--ease) both}
 @keyframes fi{from{opacity:0;transform:translateY(6px)}}
+/* ---------- phones: tabs move to a bar at the bottom, the bunny tucks into the review card ---------- */
+@media(hover:none),(pointer:coarse){ .kb{display:none} }
+@media(max-width:720px){
+  .topbar{position:static}
+  .topin{height:64px;flex-wrap:nowrap;padding:0 14px;gap:10px}
+  nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:40;order:0;width:auto;margin:0;
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom));overflow:visible;
+    display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;
+    background:var(--surface);border-top:2px solid var(--rule);box-shadow:0 -6px 18px rgba(21,26,58,.06)}
+  .tab{position:relative;flex-direction:column;justify-content:center;gap:2px;padding:4px 0 2px;border-radius:12px;
+    font-size:10.5px;font-weight:600;letter-spacing:-.01em;color:var(--ink-2);background:none;min-width:0}
+  .tab:hover{background:none;color:var(--ink-2)}
+  .tab .tl{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tab .ti{display:block;width:52px;height:30px;padding:4px 14px;border-radius:999px;transition:background .15s var(--ease)}
+  .tab[aria-selected="true"],.tab[aria-selected="true"]:hover{background:none;color:var(--cobalt)}
+  html[data-mode="dark"] .tab[aria-selected="true"]{color:var(--cobalt-dk)}
+  .tab[aria-selected="true"] .ti{background:var(--cobalt);color:#fff}
+  .tab .n{position:absolute;top:0;left:calc(50% + 6px);font-size:10px;line-height:1.4;padding:0 5px;border:2px solid var(--surface)}
+  .panel{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+  #toast{bottom:calc(86px + env(safe-area-inset-bottom))}
+  /* review */
+  .rvtop{gap:10px}
+  .rvopts{gap:6px;margin-top:10px}
+  .rvopts .counts{flex-basis:100%;margin:0 0 2px;font-size:13px}
+  .rvopts .chip{font-size:13px;padding:6px 11px}
+  .rvstage{margin-top:14px}
+  .rvbuddy{position:absolute;left:14px;right:14px;bottom:14px;z-index:5;margin:0;width:auto;flex-direction:row;justify-content:flex-end;align-items:flex-end;gap:6px;pointer-events:none}
+  .rvbuddy .br{flex:none;width:76px;pointer-events:auto}
+  .rvbuddy .br .plat{height:12px;margin-top:-8px}
+  .rvbuddy .bub{flex:0 1 auto;width:auto;align-self:flex-end;margin:0 0 46px;font-size:13px;max-width:60%;box-shadow:none}
+  .rvbuddy .bub::after{right:auto;left:100%;top:55%;margin:0 0 0 -6px;transform:rotate(-45deg)}
+  .stage{position:relative;z-index:1}
+  .card3d{min-height:300px}
+  .pad{padding-bottom:132px}
+  .hw{font-size:52px}
+  .grade{margin-top:16px}
+  .tapme{margin-top:12px;font-size:14px}
+}
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
 }
@@ -1082,11 +1121,11 @@ label.opt .note{grid-column:1;font-size:14px;color:var(--ink-2)}
       <span class="sr" id="deckline" aria-live="polite"></span>
 
       <nav class="tabs" role="tablist" aria-label="Pages">
-        <button class="tab" role="tab" id="tab-add" aria-controls="v-add" aria-selected="true" data-view="add">Look up</button>
-        <button class="tab" role="tab" id="tab-study" aria-controls="v-study" aria-selected="false" data-view="study">Review <span class="n" id="duecount"></span></button>
-        <button class="tab" role="tab" id="tab-catalog" aria-controls="v-catalog" aria-selected="false" data-view="catalog">My words</button>
-        <button class="tab" role="tab" id="tab-desk" aria-controls="v-desk" aria-selected="false" data-view="desk">Progress</button>
-        <button class="tab" role="tab" id="tab-board" aria-controls="v-board" aria-selected="false" data-view="board">Leaderboard</button>
+        <button class="tab" role="tab" id="tab-add" aria-controls="v-add" aria-selected="true" data-view="add"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg><span class="tl">Look up</span></button>
+        <button class="tab" role="tab" id="tab-study" aria-controls="v-study" aria-selected="false" data-view="study"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="14" height="13" rx="2.5"/><path d="M7 4h11.5A2.5 2.5 0 0 1 21 6.5V16"/></svg><span class="tl">Review</span> <span class="n" id="duecount"></span></button>
+        <button class="tab" role="tab" id="tab-catalog" aria-controls="v-catalog" aria-selected="false" data-view="catalog"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4.5h10.5A3.5 3.5 0 0 1 19 8v11.5H8.5A3.5 3.5 0 0 1 5 16z"/><path d="M5 16a3.5 3.5 0 0 1 3.5-3.5H19"/></svg><span class="tl">My words</span></button>
+        <button class="tab" role="tab" id="tab-desk" aria-controls="v-desk" aria-selected="false" data-view="desk"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V12M12 20V5M19 20v-9"/></svg><span class="tl">Progress</span></button>
+        <button class="tab" role="tab" id="tab-board" aria-controls="v-board" aria-selected="false" data-view="board"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7"/></svg><span class="tl">Leaderboard</span></button>
       </nav>
 
       <div class="hud">
@@ -2404,15 +2443,15 @@ function renderStudy(){
           <button class="gbtn ${c}" data-rate="${r}"><span class="l">${l}</span><span class="t">${inWords(p[i])}<span class="kh"> · key ${r}</span></span></button>
         `).join("")}
       </div>
-      <p class="tapme"><button class="linkish" data-act="undo">Undo last answer (U)</button> · <button class="linkish" data-act="share" data-id="${esc(card.id)}">Share as story</button></p>
+      <p class="tapme"><button class="linkish" data-act="undo">Undo last answer<span class="kb"> (U)</span></button> · <button class="linkish" data-act="share" data-id="${esc(card.id)}">Share as story</button></p>
     ` : typed ? `
       <div class="typed fadein">
         <label class="sr" for="guess">Type the word</label>
         <input id="guess" placeholder="Type the word" spellcheck="false" autocapitalize="none" value="${esc(ui.typedGuess)}">
         <button class="btn primary" data-act="check">Check</button>
       </div>
-      <p class="tapme">Enter to check. Space to see the answer.</p>
-    ` : `<p class="tapme">Tap the card or press Space to see the answer.</p>`}
+      <p class="tapme">Type the word, then Check<span class="kb">, or press Enter</span>. Tap the card to see the answer.</p>
+    ` : `<p class="tapme">Tap the card<span class="kb"> or press Space</span> to see the answer.</p>`}
   </div>`;
   if(typed) setTimeout(()=>{ const g=$("#guess"); if(g) g.focus(); },0);
 }
@@ -2643,6 +2682,12 @@ function flip(){
   setBuddy("back");
   if(card) fillSynonyms(card);
   render();
+  // phones: bring all four grade buttons into view, clear of the bottom tab bar
+  if(innerWidth <= 720) setTimeout(() => {
+    const g = $(".grade"), bar = $("nav.tabs"); if(!g) return;
+    const gap = g.getBoundingClientRect().bottom - (bar ? bar.getBoundingClientRect().top : innerHeight) + 14;
+    if(gap > 0) scrollBy({ top: gap, behavior: "smooth" });
+  }, 350);
   if(card && S().autoAudio) speak(card);
 }
 function checkTyped(){
