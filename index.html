@@ -315,6 +315,8 @@ nav.tabs{display:flex;gap:2px;margin-left:4px}
 .iconbtn{width:40px;height:40px;display:grid;place-items:center;color:var(--ink-2);border-radius:10px}
 .iconbtn:hover{background:var(--hover);color:var(--ink)}
 .iconbtn.danger:hover{color:var(--coral-ink)}
+.iconbtn.share{color:var(--coral-ink)}
+.iconbtn.share:hover{background:var(--coral-tint);color:var(--coral-ink)}
 
 /* ---------- review ---------- */
 .rv{max-width:900px;margin:0 auto}
@@ -1823,6 +1825,7 @@ document.addEventListener("click", e => {
 });
 setTimeout(() => TAP_POSES.concat(["oops","sleep"]).forEach(n => { new Image().src = "mascot/" + n + ".png"; }), 3000);
 const icon = {
+  share:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3.5M7.5 8 12 3.5 16.5 8"/><path d="M5 12.5V19a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19v-6.5"/></svg>',
   sound:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 8.5a5 5 0 0 1 0 7"/></svg>',
   trash:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M9 7V5h6v2M7 7l1 12h8l1-12"/></svg>',
   pause:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 6v12M15 6v12"/></svg>',
@@ -2471,6 +2474,7 @@ function renderCatalog(){
       </div>
       <div class="acts">
         <button class="iconbtn" data-speak="${c.id}" title="Hear it" aria-label="Hear ${esc(c.word)}">${icon.sound}</button>
+        <button class="iconbtn share" data-act="share" data-id="${esc(c.id)}" title="Share as story" aria-label="Share ${esc(c.word)} as a story">${icon.share}</button>
         <button class="iconbtn" data-suspend="${c.id}" title="${c.suspended ? "Resume" : "Pause"}" aria-label="${c.suspended ? "Resume" : "Pause"} ${esc(c.word)}">${c.suspended ? icon.play : icon.pause}</button>
         <button class="iconbtn" data-reset="${c.id}" title="Start over" aria-label="Start ${esc(c.word)} over">${icon.reset}</button>
         <button class="iconbtn danger" data-del="${c.id}" title="Delete" aria-label="Delete ${esc(c.word)}">${icon.trash}</button>
