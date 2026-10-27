@@ -454,38 +454,38 @@ label.opt .note{grid-column:1;font-size:14px;color:var(--ink-2)}
 .lbrow .pts small{font-family:var(--body);font-size:13px;color:var(--ink-2);margin-left:3px}
 .lbrow.me .pts small{color:#4B5275}
 
-/* ---------- sign in ---------- */
-#authGate{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:28px 16px}
+/* ---------- sign in (a plain page, Duolingo-style: no box) ---------- */
+#authGate{min-height:100dvh;display:flex;justify-content:center;padding:36px 20px 28px}
 #authGate[hidden]{display:none}
-.authcard{max-width:420px;width:100%;background:var(--surface);color:var(--ink);border:2px solid var(--edge);border-radius:24px;box-shadow:var(--lift);padding:30px 30px 26px;text-align:center;animation:authIn .3s var(--ease) both}
-@keyframes authIn{from{opacity:0;transform:translateY(10px)}}
-.authtop{display:flex;align-items:flex-end;justify-content:center;gap:4px;margin-bottom:6px}
-.auth-badge{display:flex;justify-content:center;margin:18px 0 4px}
-.auth-badge .mimg{width:120px;animation:bob 3.2s ease-in-out infinite;transform-origin:50% 100%}
-.auth-badge .plat{display:block;width:130px;height:16px;margin:-10px auto 0;border-radius:50%;background:var(--plat);border:2px solid var(--edge)}
-.authcard h2{margin:0}
-.auth-tag{color:var(--ink-2);font-size:17px;margin:14px 0 18px;line-height:1.4}
-.auth-features{list-style:none;margin:0 0 20px;padding:0;text-align:left;display:grid;gap:8px}
-.auth-features li{display:flex;align-items:center;gap:12px;font-size:16px;color:var(--ink)}
-.auth-features i{width:12px;height:12px;border-radius:4px;border:2px solid var(--edge);flex:none;transform:rotate(-8deg)}
-.auth-google{width:100%;height:52px;background:var(--surface);color:var(--ink);border:2px solid var(--edge);border-radius:14px;box-shadow:var(--press);font-weight:600;font-size:16px;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:10px}
-.auth-google:active{transform:translateY(4px);box-shadow:none}
-.auth-divider{display:flex;align-items:center;gap:12px;margin-bottom:16px;color:var(--ink-2);font-size:14px}
+.authcard{max-width:400px;width:100%;color:var(--ink);text-align:center;animation:authIn .3s var(--ease) both}
+@keyframes authIn{from{opacity:0;transform:translateY(8px)}}
+.auth-badge{display:flex;justify-content:center;margin:8px 0 6px}
+.auth-badge .mimg{width:110px;animation:bob 3.2s ease-in-out infinite;transform-origin:50% 100%}
+.auth-badge .plat{display:block;width:120px;height:16px;margin:-10px auto 0;border-radius:50%;background:var(--plat);border:2px solid var(--edge)}
+.authh{font-family:var(--display);font-weight:400;font-size:46px;line-height:1;margin:18px 0 22px}
+.authcard form{display:flex;flex-direction:column;gap:12px}
+.authcard input[type=email],.authcard input[type=password],.authcard input[type=text]{width:100%;height:56px;padding:0 16px;border:2px solid var(--rule);border-radius:16px;font-size:17px;color:var(--ink);background:var(--surface);margin:0}
+.authcard input:focus{outline:none;border-color:var(--cobalt);box-shadow:0 0 0 3px color-mix(in srgb,var(--cobalt) 25%,transparent)}
+.pwbox{position:relative}
+.pwbox input{padding-right:96px!important}
+.forgot{position:absolute;right:8px;top:8px;height:40px;padding:0 12px;border-radius:10px;font-size:14px;font-weight:700;color:var(--ink-2)}
+.forgot:hover{color:var(--cobalt);background:var(--hover)}
+.auth-remember{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--ink-2);text-align:left;padding:2px 2px;cursor:pointer}
+.authcard .auth-remember input{width:20px;height:20px;margin:0;accent-color:var(--cobalt)}
+.authgo{width:100%;height:56px;margin-top:4px;background:var(--cobalt);color:var(--on-cobalt);font-weight:700;font-size:17px;border:2px solid var(--edge);border-radius:16px;box-shadow:var(--press);transition:transform .08s var(--ease),box-shadow .08s var(--ease)}
+.authgo:active{transform:translateY(4px);box-shadow:none}
+.authgo[disabled]{opacity:.65;cursor:progress}
+.authmsg{margin:12px 0 0;font-size:15px;color:var(--ink-2);min-height:22px}
+.auth-divider{display:flex;align-items:center;gap:14px;margin:8px 0 18px;color:var(--ink-2);font-size:14px;font-weight:700}
 .auth-divider span{flex:1;height:2px;background:var(--rule)}
-.authcard input{width:100%;height:50px;padding:0 14px;border:2px solid var(--edge);border-radius:14px;font-size:17px;color:var(--ink);background:var(--field);margin-bottom:10px}
-.authcard input:focus{outline:3px solid var(--cobalt);outline-offset:1px}
-.authcard form button,.authcard #authSubmit,.authcard #codeSubmit{width:100%;height:52px;background:var(--cobalt);color:var(--on-cobalt);font-weight:700;font-size:16px;border:2px solid var(--edge);border-radius:14px;box-shadow:var(--press)}
-.authcard form button:active{transform:translateY(4px);box-shadow:none}
-.authcard form button[disabled]{opacity:.65;cursor:progress}
-.auth-note{font-size:14px;color:var(--ink-2);margin:12px 0 0}
-.authmsg{margin-top:12px;font-size:15px;color:var(--ink-2);min-height:20px}
-.auth-tabs{display:flex;gap:4px;margin-bottom:14px;background:var(--surface2);border-radius:14px;padding:4px}
-.auth-tab{flex:1;height:40px;border-radius:10px;font-weight:600;font-size:15px;color:var(--ink-2)}
-.auth-tab.active{background:var(--surface);color:var(--ink);box-shadow:0 1px 0 var(--rule),0 0 0 2px var(--edge)}
-.auth-remember{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink-2);margin:0 0 12px;text-align:left}
-.authcard .auth-remember input{width:18px;height:18px;margin:0;accent-color:var(--cobalt)}
+.auth-google{width:100%;height:56px;background:var(--surface);color:var(--ink);border:2px solid var(--rule);border-radius:16px;box-shadow:0 4px 0 var(--rule);font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;gap:12px}
+.auth-google:hover{border-color:var(--edge)}
+.auth-google:active{transform:translateY(4px);box-shadow:none}
+.authswitch{margin:22px 0 0;font-size:15px;color:var(--ink-2)}
+.linkish.strong{font-weight:700;color:var(--cobalt);text-decoration-color:color-mix(in srgb,var(--cobalt) 35%,transparent)}
+.authfoot{margin:30px 0 0;font-size:13px;color:var(--ink-2);line-height:1.5}
+.authfoot a{color:var(--ink);font-weight:600}
 .authmode{position:fixed;top:14px;right:14px;z-index:5}
-@media(max-width:420px){.authcard{padding:24px 18px 22px}}
 
 /* ---------- pop-ups ---------- */
 .unmodal{position:fixed;inset:0;background:var(--scrim);display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px}
@@ -530,12 +530,14 @@ label.opt .note{grid-column:1;font-size:14px;color:var(--ink-2)}
   .tab{position:relative;flex-direction:column;justify-content:center;gap:2px;padding:4px 0 2px;border-radius:12px;
     font-size:10.5px;font-weight:600;letter-spacing:-.01em;color:var(--ink-2);background:none;min-width:0}
   .tab:hover{background:none;color:var(--ink-2)}
-  .tab .tl{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .tab .ti{display:block;width:52px;height:30px;padding:4px 14px;border-radius:999px;transition:background .15s var(--ease)}
-  .tab[aria-selected="true"],.tab[aria-selected="true"]:hover{background:none;color:var(--cobalt)}
-  html[data-mode="dark"] .tab[aria-selected="true"]{color:var(--cobalt-dk)}
-  .tab[aria-selected="true"] .ti{background:var(--cobalt);color:#fff}
-  .tab .n{position:absolute;top:0;left:calc(50% + 6px);font-size:10px;line-height:1.4;padding:0 5px;border:2px solid var(--surface)}
+  .tab .tl{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .tab{padding:4px 0}
+  .tab .ti{display:block;width:60px;height:52px;padding:9px 13px;border-radius:16px;border:2px solid transparent;transition:background .15s var(--ease),border-color .15s var(--ease),transform .15s var(--ease)}
+  .tab:active .ti{transform:scale(.92)}
+  .tab[aria-selected="true"],.tab[aria-selected="true"]:hover{background:none}
+  .tab[aria-selected="true"] .ti{background:color-mix(in srgb,var(--cobalt) 12%,var(--surface));border-color:var(--cobalt)}
+  .tab:not([aria-selected="true"]) .ti{filter:saturate(.75)}
+  .tab .n{position:absolute;top:2px;left:calc(50% + 10px);font-size:10px;line-height:1.4;padding:0 5px;border:2px solid var(--surface)}
   .panel{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
   #toast{bottom:calc(86px + env(safe-area-inset-bottom))}
   /* review */
@@ -1041,77 +1043,64 @@ label.opt .note{grid-column:1;font-size:14px;color:var(--ink-2)}
 
 <div id="authGate">
   <button class="tbtn authmode" id="modeBtnAuth" type="button" aria-label="Switch between light and dark mode" title="Light / dark"></button>
-  <div class="authcard">
-    <h2 class="authtop"><span class="wm lg" role="img" aria-label="Vocario"><svg class="ears" viewBox="0 0 70 96" aria-hidden="true"><g transform="translate(35 92) rotate(-17)"><path class="ear-o" stroke-width="4" d="M0 0C-15-22-13-72 0-88C13-72 15-22 0 0Z"/><path class="ear-i" d="M0-14C-6-30-5-64 0-76C5-64 6-30 0-14Z"/></g><g transform="translate(35 92) rotate(17)"><path class="ear-o" stroke-width="4" d="M0 0C-15-22-13-72 0-88C13-72 15-22 0 0Z"/><path class="ear-i" d="M0-14C-6-30-5-64 0-76C5-64 6-30 0-14Z"/></g></svg><span class="rest" aria-hidden="true"><svg class="lens" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="15" fill="#FFFFFF" stroke="#FF7A2F" stroke-width="7"/><circle cx="23" cy="21" r="4.5" fill="#151A3A"/><circle cx="24.5" cy="19.5" r="1.4" fill="#FFFFFF"/></svg>c<b>ario</b></span></span></h2>
+  <main class="authcard">
     <div class="auth-badge"><div><img class="mimg" src="mascot/wave.png" alt="The Vocario bunny waving" width="118" height="175"><span class="plat" aria-hidden="true"></span></div></div>
-    <p class="auth-tag">Turn any word you read into a card that sticks.</p>
 
-    <ul class="auth-features">
-      <li><i style="background:var(--st-yellow)"></i>Real dictionary lookups, instantly</li>
-      <li><i style="background:var(--st-green)"></i>Reviews spaced out so words stay with you</li>
-      <li><i style="background:var(--st-sky)"></i>Synced across every device you own</li>
-    </ul>
+    <section id="loginView" aria-labelledby="loginTitle">
+      <h1 class="authh" id="loginTitle">Log in</h1>
+      <form id="loginForm" autocomplete="on">
+        <label class="sr" for="loginEmail">Email address</label>
+        <input id="loginEmail" type="email" placeholder="Email" autocomplete="username email" required>
+        <div class="pwbox">
+          <label class="sr" for="loginPassword">Password</label>
+          <input id="loginPassword" type="password" placeholder="Password" autocomplete="current-password" required>
+          <button type="button" class="forgot" id="forgotBtn">Forgot?</button>
+        </div>
+        <label class="auth-remember">
+          <input type="checkbox" id="rememberMe" checked>
+          Keep me logged in on this device
+        </label>
+        <button type="submit" id="loginSubmit" class="authgo">Log in</button>
+      </form>
+    </section>
 
+    <section id="signupView" aria-labelledby="signupTitle" hidden>
+      <h1 class="authh" id="signupTitle">Create your account</h1>
+      <form id="signupForm" autocomplete="on">
+        <label class="sr" for="signupEmail">Email address</label>
+        <input id="signupEmail" type="email" placeholder="Email" autocomplete="email" required>
+        <label class="sr" for="signupUsername">Username</label>
+        <input id="signupUsername" type="text" placeholder="Username (3–15 letters, numbers, _)" autocomplete="nickname" maxlength="15" pattern="[A-Za-z0-9_]{3,15}" required>
+        <label class="sr" for="signupPassword">Password</label>
+        <input id="signupPassword" type="password" placeholder="Password (6+ characters)" autocomplete="new-password" minlength="6" required>
+        <button type="submit" id="signupSubmit" class="authgo">Create account</button>
+      </form>
+    </section>
+
+    <p class="authmsg" id="authMsg" role="status"></p>
+
+    <div class="auth-divider"><span></span>or<span></span></div>
     <button type="button" id="googleBtn" class="auth-google">
       <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.5-2.1 14.3-5.6l-6.6-5.6C29.6 34.7 26.9 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.6 5.1C9.6 39.6 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.7l6.6 5.6C39.8 37.2 44 31.4 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>
       Continue with Google
     </button>
 
-    <div class="auth-divider"><span></span>or use email<span></span></div>
+    <p class="authswitch" id="toSignupRow">New here? <button type="button" class="linkish strong" data-authview="signup">Create an account</button></p>
+    <p class="authswitch" id="toLoginRow" hidden>Already have an account? <button type="button" class="linkish strong" data-authview="login">Log in</button></p>
 
-    <div class="auth-tabs">
-      <button type="button" class="auth-tab active" data-authtab="login">Log in</button>
-      <button type="button" class="auth-tab" data-authtab="signup">Sign up</button>
-    </div>
+    <p class="authfoot">By logging in to Vocario, you agree to our <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</p>
+  </main>
+</div>
 
-    <form id="loginForm" autocomplete="on">
-      <label class="sr" for="loginEmail">Email address</label>
-      <input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required>
-      <label class="sr" for="loginPassword">Password</label>
-      <input id="loginPassword" type="password" placeholder="Password" autocomplete="current-password" required>
-      <label class="auth-remember">
-        <input type="checkbox" id="rememberMe" checked>
-        Remember me on this device
-      </label>
-      <button type="submit" id="loginSubmit">Log in</button>
-    </form>
-
-    <form id="signupForm" autocomplete="off" hidden>
-      <label class="sr" for="signupEmail">Email address</label>
-      <input id="signupEmail" type="email" placeholder="you@example.com" autocomplete="email" required>
-      <label class="sr" for="signupUsername">Username</label>
-      <input id="signupUsername" type="text" placeholder="Pick a username (3–15 letters, numbers, _)" autocomplete="off" maxlength="15" pattern="[A-Za-z0-9_]{3,15}" required>
-      <label class="sr" for="signupPassword">Password</label>
-      <input id="signupPassword" type="password" placeholder="Create a password (6+ characters)" autocomplete="new-password" minlength="6" required>
-      <button type="submit" id="signupSubmit">Create account</button>
-    </form>
-
-    <p class="auth-note">
-      <button type="button" id="toggleCodeLogin" class="linkish">Prefer a one-time code by email instead?</button>
-    </p>
-
-    <div id="codeLoginBlock" hidden>
-      <div id="emailStep">
-        <form id="authForm" autocomplete="off">
-          <label class="sr" for="authEmail">Email address</label>
-          <input id="authEmail" type="email" placeholder="you@example.com" required>
-          <button type="submit" id="authSubmit">Send me a code</button>
-        </form>
-        <p class="auth-note">We'll email you a code. No password needed.</p>
-      </div>
-
-      <div id="codeStep" hidden>
-        <form id="codeForm" autocomplete="off">
-          <label class="sr" for="authCode">Sign-in code</label>
-          <input id="authCode" inputmode="numeric" maxlength="10" placeholder="Code from your email" required>
-          <button type="submit" id="codeSubmit">Verify and sign in</button>
-        </form>
-        <p class="auth-note"><button type="button" id="backToEmail" class="linkish">Use a different email</button></p>
-      </div>
-    </div>
-
-    <p class="authmsg" id="authMsg"></p>
-  </div>
+<div class="unmodal" id="pwModal" hidden>
+  <form class="unbox" id="pwForm" role="dialog" aria-modal="true" aria-labelledby="pwTitle">
+    <h3 id="pwTitle">Set a new password</h3>
+    <p>Pick a new password for your Vocario account.</p>
+    <label class="sr" for="pwNew">New password</label>
+    <input id="pwNew" type="password" minlength="6" placeholder="New password (6+ characters)" autocomplete="new-password" required>
+    <div class="unmsg" id="pwMsg"></div>
+    <div class="btnrow"><button class="btn primary" type="submit" id="pwSave">Save password</button></div>
+  </form>
 </div>
 
 <div class="wrap" id="app" hidden>
@@ -1123,11 +1112,11 @@ label.opt .note{grid-column:1;font-size:14px;color:var(--ink-2)}
       <span class="sr" id="deckline" aria-live="polite"></span>
 
       <nav class="tabs" role="tablist" aria-label="Pages">
-        <button class="tab" role="tab" id="tab-add" aria-controls="v-add" aria-selected="true" data-view="add"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg><span class="tl">Look up</span></button>
-        <button class="tab" role="tab" id="tab-study" aria-controls="v-study" aria-selected="false" data-view="study"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="14" height="13" rx="2.5"/><path d="M7 4h11.5A2.5 2.5 0 0 1 21 6.5V16"/></svg><span class="tl">Review</span> <span class="n" id="duecount"></span></button>
-        <button class="tab" role="tab" id="tab-catalog" aria-controls="v-catalog" aria-selected="false" data-view="catalog"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4.5h10.5A3.5 3.5 0 0 1 19 8v11.5H8.5A3.5 3.5 0 0 1 5 16z"/><path d="M5 16a3.5 3.5 0 0 1 3.5-3.5H19"/></svg><span class="tl">My words</span></button>
-        <button class="tab" role="tab" id="tab-desk" aria-controls="v-desk" aria-selected="false" data-view="desk"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V12M12 20V5M19 20v-9"/></svg><span class="tl">Progress</span></button>
-        <button class="tab" role="tab" id="tab-board" aria-controls="v-board" aria-selected="false" data-view="board"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7"/></svg><span class="tl">Leaderboard</span></button>
+        <button class="tab" role="tab" id="tab-add" aria-controls="v-add" aria-label="Look up" aria-selected="true" data-view="add"><svg class="ti" viewBox="0 0 32 32" aria-hidden="true"><circle cx="13.5" cy="13.5" r="9" fill="#FFF1A8" stroke="#151A3A" stroke-width="2.2" stroke-linejoin="round"/><path d="M9.5 11.5a4.5 4.5 0 0 1 4-3.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 20.5l6 6" stroke="#151A3A" stroke-width="5.5" stroke-linecap="round"/><path d="M20.5 20.5l6 6" stroke="#FF7A2F" stroke-width="2.2" stroke-linecap="round"/></svg><span class="tl">Look up</span></button>
+        <button class="tab" role="tab" id="tab-study" aria-controls="v-study" aria-label="Review" aria-selected="false" data-view="study"><svg class="ti" viewBox="0 0 32 32" aria-hidden="true"><rect x="10" y="3.5" width="17" height="21" rx="3.5" fill="#D1E2FF" stroke="#151A3A" stroke-width="2.2" stroke-linejoin="round" transform="rotate(8 18.5 14)"/><rect x="5" y="7.5" width="17" height="21" rx="3.5" fill="#FF5A4E" stroke="#151A3A" stroke-width="2.2" stroke-linejoin="round"/><path d="M9.5 14h8M9.5 18.5h5.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg><span class="tl">Review</span> <span class="n" id="duecount"></span></button>
+        <button class="tab" role="tab" id="tab-catalog" aria-controls="v-catalog" aria-label="My words" aria-selected="false" data-view="catalog"><svg class="ti" viewBox="0 0 32 32" aria-hidden="true"><path d="M6 7a3 3 0 0 1 3-3h17v19H9a3 3 0 0 0-3 3z" fill="#7ED6A0" stroke="#151A3A" stroke-width="2.2" stroke-linejoin="round"/><path d="M6 26a3 3 0 0 1 3-3h17v5H9a3 3 0 0 1-3-2z" fill="#FFFFFF" stroke="#151A3A" stroke-width="2.2" stroke-linejoin="round"/><path d="M18 4v8l2.5-1.8L23 12V4" fill="#FF5A4E" stroke="#151A3A" stroke-width="2.2" stroke-linejoin="round"/></svg><span class="tl">My words</span></button>
+        <button class="tab" role="tab" id="tab-desk" aria-controls="v-desk" aria-label="Progress" aria-selected="false" data-view="desk"><svg class="ti" viewBox="0 0 32 32" aria-hidden="true"><rect x="3.5" y="16" width="7" height="12" rx="2" fill="#E6DCFF" stroke="#151A3A" stroke-width="2.2" stroke-linejoin="round"/><rect x="12.5" y="10" width="7" height="18" rx="2" fill="#5B8CFF" stroke="#151A3A" stroke-width="2.2" stroke-linejoin="round"/><rect x="21.5" y="4" width="7" height="24" rx="2" fill="#FF5A4E" stroke="#151A3A" stroke-width="2.2" stroke-linejoin="round"/></svg><span class="tl">Progress</span></button>
+        <button class="tab" role="tab" id="tab-board" aria-controls="v-board" aria-label="Leaderboard" aria-selected="false" data-view="board"><svg class="ti" viewBox="0 0 32 32" aria-hidden="true"><path d="M9 4h14v7.5a7 7 0 0 1-14 0z" fill="#FFC93C" stroke="#151A3A" stroke-width="2.2" stroke-linejoin="round"/><path d="M9 6.5H5.5a4.5 4.5 0 0 0 4.5 5.5M23 6.5h3.5a4.5 4.5 0 0 1-4.5 5.5" fill="none" stroke="#151A3A" stroke-width="2.2" stroke-linejoin="round"/><path d="M16 18.5V22" stroke="#151A3A" stroke-width="2.2" stroke-linejoin="round"/><rect x="10" y="22" width="12" height="5.5" rx="1.8" fill="#FF7A2F" stroke="#151A3A" stroke-width="2.2" stroke-linejoin="round"/><path d="M13 8.5v3" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg><span class="tl">Leaderboard</span></button>
       </nav>
 
       <div class="hud">
@@ -1414,7 +1403,8 @@ async function initAuth(){
   if(session) onLoggedIn(session);
   else showAuthGate();
 
-  db.auth.onAuthStateChange((_event, session) => {
+  db.auth.onAuthStateChange((event, session) => {
+    if(event === "PASSWORD_RECOVERY") openPwModal();   // arrived from a "reset your password" email
     if(session) onLoggedIn(session);
     else onLoggedOut();
   });
@@ -1422,21 +1412,12 @@ async function initAuth(){
 function showAuthGate(){
   $("#authGate").hidden = false;
   $("#app").hidden = true;
-  $("#codeStep").hidden = true;
-  $("#emailStep").hidden = false;
-  $("#authEmail").value = "";
-  $("#authCode").value = "";
   $("#loginEmail").value = "";
   $("#loginPassword").value = "";
   $("#signupEmail").value = "";
   $("#signupPassword").value = "";
   $("#signupUsername").value = "";
-  $$(".auth-tab").forEach(t => t.classList.toggle("active", t.dataset.authtab === "login"));
-  $("#loginForm").hidden = false;
-  $("#signupForm").hidden = true;
-  $("#codeLoginBlock").hidden = true;
-  $("#toggleCodeLogin").textContent = "Prefer a one-time code by email instead?";
-  $("#authMsg").textContent = "";
+  setAuthView("login");
 }
 async function onLoggedIn(session){
   const localCards = state.cards; // whatever this browser had saved before signing in
@@ -2938,23 +2919,38 @@ $("#googleBtn").addEventListener("click", async () => {
   });
 });
 
-/* ---------- log in / sign up tabs ---------- */
-$$(".auth-tab").forEach(tab => {
-  tab.addEventListener("click", () => {
-    $$(".auth-tab").forEach(t => t.classList.remove("active"));
-    tab.classList.add("active");
-    $("#loginForm").hidden = tab.dataset.authtab !== "login";
-    $("#signupForm").hidden = tab.dataset.authtab !== "signup";
-    $("#authMsg").textContent = "";
-  });
-});
+/* ---------- log in / sign up ---------- */
+function setAuthView(v){
+  const signup = v === "signup";
+  $("#loginView").hidden = signup;  $("#signupView").hidden = !signup;
+  $("#toSignupRow").hidden = signup; $("#toLoginRow").hidden = !signup;
+  $("#authMsg").textContent = ""; $("#authMsg").style.color = "";
+  setTimeout(() => (signup ? $("#signupEmail") : $("#loginEmail")).focus(), 0);
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-authview]"); if(b) setAuthView(b.dataset.authview); });
+$("#rememberMe").checked = getRememberPref();
 
-$("#toggleCodeLogin").addEventListener("click", () => {
-  const block = $("#codeLoginBlock");
-  block.hidden = !block.hidden;
-  $("#toggleCodeLogin").textContent = block.hidden
-    ? "Prefer a one-time code by email instead?"
-    : "Hide the one-time code option";
+/* Forgot password: Supabase emails a link back to this page, which then asks for a new password. */
+$("#forgotBtn").addEventListener("click", async () => {
+  const email = $("#loginEmail").value.trim();
+  const msg = $("#authMsg");
+  if(!email || !/^\S+@\S+\.\S+$/.test(email)){ msg.style.color = "var(--coral-ink)"; msg.textContent = "Type your email above first, then tap Forgot?"; $("#loginEmail").focus(); return; }
+  const btn = $("#forgotBtn"); btn.disabled = true;
+  const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+  btn.disabled = false;
+  msg.style.color = error ? "var(--coral-ink)" : "var(--cobalt)";
+  msg.textContent = error ? "Couldn't send the email: " + error.message : "Check your inbox for a link to set a new password.";
+});
+function openPwModal(){ $("#pwMsg").textContent = ""; $("#pwNew").value = ""; $("#pwModal").hidden = false; setTimeout(() => $("#pwNew").focus(), 0); }
+$("#pwForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const pw = $("#pwNew").value;
+  if(pw.length < 6){ $("#pwMsg").textContent = "Use at least 6 characters."; return; }
+  const btn = $("#pwSave"); btn.disabled = true; btn.textContent = "Saving…";
+  const { error } = await db.auth.updateUser({ password: pw });
+  btn.disabled = false; btn.textContent = "Save password";
+  if(error){ $("#pwMsg").textContent = error.message; return; }
+  $("#pwModal").hidden = true; toast("Password updated. You're logged in.");
 });
 
 $("#loginForm").addEventListener("submit", async e => {
@@ -2986,56 +2982,6 @@ $("#signupForm").addEventListener("submit", async e => {
   // On success, onAuthStateChange (wired elsewhere) signs them straight in.
 });
 
-let pendingAuthEmail = "";
-
-$("#authForm").addEventListener("submit", async e => {
-  e.preventDefault();
-  const email = $("#authEmail").value.trim();
-  if(!email) return;
-  const btn = $("#authSubmit");
-  btn.disabled = true; btn.textContent = "Sending…";
-  const { error } = await db.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
-  btn.disabled = false; btn.textContent = "Send me a code";
-  if(error){ $("#authMsg").textContent = error.message; return; }
-  pendingAuthEmail = email;
-  $("#emailStep").hidden = true;
-  $("#codeStep").hidden = false;
-  $("#authMsg").textContent = "Code sent. Check your inbox.";
-  setTimeout(() => $("#authCode").focus(), 0);
-});
-
-$("#backToEmail").addEventListener("click", () => {
-  $("#codeStep").hidden = true;
-  $("#emailStep").hidden = false;
-  $("#authMsg").textContent = "";
-  $("#authCode").value = "";
-});
-
-$("#codeForm").addEventListener("submit", async e => {
-  e.preventDefault();
-  const token = $("#authCode").value.replace(/\D/g, "");
-  if(!token) return;
-  const btn = $("#codeSubmit");
-  btn.disabled = true; btn.textContent = "Checking…";
-  let { error } = await db.auth.verifyOtp({ email: pendingAuthEmail, token, type: "email" });
-  if(error){
-    // New accounts sometimes need "signup" instead of "email": try the other one before giving up.
-    const retry = await db.auth.verifyOtp({ email: pendingAuthEmail, token, type: "signup" });
-    error = retry.error;
-  }
-  if(!error){
-    btn.textContent = "Signed in";
-    $("#authMsg").textContent = "Signed in. Loading your words…";
-    $("#authMsg").style.color = "var(--cobalt)";
-    // Stay disabled: this code is now used up, and onAuthStateChange (wired
-    // elsewhere) is about to switch the screen over on its own.
-    return;
-  }
-  btn.disabled = false; btn.textContent = "Verify and sign in";
-  $("#authMsg").style.color = "";
-  $("#authMsg").textContent = `Error: ${error.message}`;
-});
-
 $("#lookupForm").addEventListener("submit", e => {
   e.preventDefault();
   if(ui.busy) return;
@@ -3043,7 +2989,7 @@ $("#lookupForm").addEventListener("submit", e => {
 });
 
 document.addEventListener("keydown", e => {
-  if(document.querySelector(".vsh-ov") || !$("#lkModal").hidden || !$("#unModal").hidden) return; // a pop-up is open: leave the keys alone
+  if(document.querySelector(".vsh-ov") || !$("#lkModal").hidden || !$("#unModal").hidden || !$("#pwModal").hidden) return; // a pop-up is open: leave the keys alone
   const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName);
   if(typing){
     if(e.key === "Enter" && e.target.id === "guess"){ e.preventDefault(); checkTyped(); }
