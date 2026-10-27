@@ -346,6 +346,8 @@ nav.tabs{display:flex;gap:6px;margin-left:6px}
 .face{grid-area:1/1;position:relative;backface-visibility:hidden;-webkit-backface-visibility:hidden;
   background:var(--surface);color:var(--ink);border:2px solid var(--edge);border-top:10px solid var(--coral);border-radius:22px;box-shadow:var(--lift);overflow:hidden}
 .face.back{transform:rotateY(180deg);border-top-color:var(--cobalt)}
+/* the card is as tall as the side you're looking at; the hidden side doesn't stretch it */
+.card3d:not(.flip) .face.back,.card3d.flip .face:not(.back){position:absolute;inset:0}
 .pad{padding:30px 44px 30px;display:flex;flex-direction:column;min-height:100%}
 @media(max-width:560px){.pad{padding:22px 20px 24px}.card3d{min-height:340px}}
 .qlbl{margin:0;font-size:14px;font-weight:700;color:var(--ink-2)}
@@ -548,7 +550,7 @@ label.opt .note{grid-column:1;font-size:14px;color:var(--ink-2)}
   .rvbuddy .bub{flex:0 1 auto;width:auto;align-self:flex-end;margin:0 0 46px;font-size:13px;max-width:60%;box-shadow:none}
   .rvbuddy .bub::after{right:auto;left:100%;top:55%;margin:0 0 0 -6px;transform:rotate(-45deg)}
   .stage{position:relative;z-index:1}
-  .card3d{min-height:300px}
+  .card3d{min-height:270px}
   .pad{padding-bottom:132px}
   .hw{font-size:52px}
   .grade{margin-top:16px}
