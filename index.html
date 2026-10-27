@@ -70,7 +70,8 @@ html[data-mode="dark"]{
   color-scheme:dark;
 }
 *{box-sizing:border-box}
-html,body{margin:0;padding:0}
+html,body{margin:0;padding:0;overflow-x:clip}
+.wrap,.panel,.rvstage,.stage{overflow-x:clip}
 body{
   min-height:100dvh;
   background-color:var(--bg);
@@ -105,12 +106,13 @@ html[data-mode="dark"] .wm .ear-o{stroke:var(--edge)}
 .wrap{position:relative;z-index:1}
 .topbar{background:var(--surface);border-bottom:2px solid var(--rule);position:sticky;top:0;z-index:20}
 .topin{max-width:1240px;margin:0 auto;padding:0 28px;height:80px;display:flex;align-items:center;gap:24px}
-nav.tabs{display:flex;gap:6px;margin-left:6px}
-.tab{padding:10px 16px;border-radius:12px;color:var(--ink-3);font-weight:500;font-size:15px;display:flex;align-items:center;gap:8px;white-space:nowrap;
+nav.tabs{display:flex;gap:2px;margin-left:4px}
+@media(max-width:1380px) and (min-width:721px){ .streakpill .lbl{display:none} .topin{gap:16px} .xpbar{width:80px} }
+.tab{padding:9px 12px 9px 10px;border-radius:12px;color:var(--ink-3);font-weight:500;font-size:15px;display:flex;align-items:center;gap:7px;white-space:nowrap;
   transition:background .15s var(--ease),color .15s var(--ease)}
 .tab:hover{background:var(--hover);color:var(--ink)}
 .tab[aria-selected="true"]{background:var(--cobalt);color:var(--on-cobalt)}
-.tab .ti{display:none}
+.tab .ti{display:block;width:24px;height:24px;flex:none}
 .tab .n{background:var(--coral);color:#fff;font-size:12px;font-weight:700;padding:1px 7px;border-radius:999px;line-height:1.5}
 .tab .n:empty,.tab .n[data-zero]{display:none}
 .hud{margin-left:auto;display:flex;align-items:center;gap:12px}
@@ -128,7 +130,7 @@ nav.tabs{display:flex;gap:6px;margin-left:6px}
 .tbtn{width:42px;height:42px;display:grid;place-items:center;border-radius:12px;border:2px solid var(--rule);background:var(--surface);color:var(--ink)}
 .tbtn:hover{border-color:var(--edge)}
 .tbtn svg{display:block}
-@media(max-width:1120px){
+@media(max-width:1240px){
   .topin{height:auto;flex-wrap:wrap;padding:12px 20px 0;gap:12px 18px}
   nav.tabs{order:3;width:100%;margin:0 -20px;padding:0 20px 10px;overflow-x:auto;scrollbar-width:none}
   nav.tabs::-webkit-scrollbar{display:none}
@@ -1831,39 +1833,40 @@ const icon = {
 /* ============================================================
    SCHEDULER: SM-2 with learning steps (Anki-style)
    ============================================================ */
+/* Review timing (Vocario's own, kept simple):
+   first time you answer a word:  Forgot 10 min · Hard 1 day · Got it 3 days · Easy 7 days
+   every time after that you get it right, the wait grows gently (about 1.5x for Got it),
+   and Easy is always longer than Got it, which is always longer than Hard. */
+const FIRST = { forgotMin:10, hard:1, good:3, easy:7 };
+const GROW  = { hard:1.2, good:1.5, easy:2.1 };
 function graduate(c, days, now){
   c.state = "review"; c.step = null;
-  c.interval = Math.min(Math.max(1, Math.round(days)), S().maxInterval);
+  c.interval = Math.min(Math.max(1, Math.round(days)), S().maxInterval || 1825);
   c.due = now + c.interval*DAY;
   c.ease = c.ease || 2.5;
 }
-function grow(prev, next){
-  const iv = Math.max(Math.round(prev)+1, Math.round(next));
-  return Math.min(iv, S().maxInterval);
+/** The three "remembered it" waits for a card already in review, always in order Hard < Got it < Easy. */
+function nextWaits(iv){
+  const cap = S().maxInterval || 1825;
+  const h = Math.min(cap, Math.max(iv + 1, Math.round(iv * GROW.hard)));
+  const g = Math.min(cap, Math.max(h + 1, Math.round(iv * GROW.good)));
+  const e = Math.min(cap, Math.max(g + 2, Math.round(iv * GROW.easy)));
+  return [h, g, e];
 }
 /** Pure: returns the card as it *would* be after this rating. */
 function schedule(card, rating, now){
-  const s = S(), c = {...card};
+  const c = {...card};
   c.reps = (c.reps||0) + 1;
 
-  if(c.state === "new" || c.state === "learning" || c.state === "relearning"){
-    const relearn = c.state === "relearning";
-    const steps = relearn ? s.relearnSteps : s.learnSteps;
-    const step = c.step || 0, prev = c.interval || 0;
+  if(c.state !== "review"){
+    // new, or coming back after a "Forgot"
+    const prev = c.state === "relearning" ? (c.interval || 0) : 0;   // what it had before you forgot it
     if(rating === 1){
-      c.state = relearn ? "relearning" : "learning"; c.step = 0; c.due = now + steps[0]*MIN;
-    } else if(rating === 2){
-      c.state = relearn ? "relearning" : "learning"; c.step = step;
-      c.due = now + Math.round(steps[Math.min(step, steps.length-1)] * 1.5) * MIN;
-    } else if(rating === 3){
-      if(step + 1 < steps.length){
-        c.state = relearn ? "relearning" : "learning"; c.step = step + 1;
-        c.due = now + steps[step+1]*MIN;
-      } else {
-        graduate(c, relearn ? Math.max(1, prev) : s.graduate, now);
-      }
+      c.state = c.state === "relearning" ? "relearning" : "learning"; c.step = 0;
+      c.due = now + FIRST.forgotMin*MIN;
     } else {
-      graduate(c, relearn ? Math.max(1, prev)+1 : s.easyGraduate, now);
+      const base = rating === 2 ? FIRST.hard : rating === 3 ? FIRST.good : FIRST.easy;
+      graduate(c, Math.max(base, Math.round(prev * (rating === 2 ? .5 : rating === 3 ? .75 : 1))), now);
     }
     return c;
   }
@@ -1871,19 +1874,18 @@ function schedule(card, rating, now){
   /* state === review */
   const ease = c.ease || 2.5, iv = c.interval || 1;
   if(rating === 1){
-    c.ease = Math.max(s.minEase, ease - 0.20);
+    c.ease = Math.max(1.3, ease - 0.20);
     c.lapses = (c.lapses||0) + 1;
     c.state = "relearning"; c.step = 0;
-    c.interval = Math.max(1, Math.round(iv * s.lapseMult));  // interval it returns to
-    c.due = now + s.relearnSteps[0]*MIN;
+    c.interval = Math.max(1, Math.round(iv * 0.5));  // it comes back sooner once you know it again
+    c.due = now + FIRST.forgotMin*MIN;
     return c;
   }
-  if(rating === 2){ c.ease = Math.max(s.minEase, ease - 0.15); c.interval = grow(iv, iv * 1.2); }
-  else if(rating === 3){ c.interval = grow(iv, iv * ease); }
-  else { c.ease = ease + 0.15; c.interval = grow(iv, iv * ease * 1.3); }
-
-  const fuzz = c.interval >= 4 ? 1 + (Math.random()*0.10 - 0.05) : 1;
-  c.due = now + c.interval * DAY * fuzz;
+  const [h, g, e] = nextWaits(iv);
+  if(rating === 2){ c.ease = Math.max(1.3, ease - 0.15); c.interval = h; }
+  else if(rating === 3){ c.interval = g; }
+  else { c.ease = ease + 0.15; c.interval = e; }
+  c.due = now + c.interval * DAY;
   return c;
 }
 function previews(card, now){
@@ -2337,9 +2339,9 @@ function blank(text, word){
 }
 function cardFaces(card){
   const m = card.meanings[0] || {pos:"", definition:"(no meaning saved)", example:""};
-  const meta = [m.pos, card.ipa].filter(Boolean).join(" · ");
-  const word = `<h2 class="hw">${esc(card.word)}</h2>${meta ? `<p class="ipa">${esc(meta)}</p>` : ""}`;
   const many = card.meanings.length > 1;
+  const meta = (many ? [card.ipa] : [m.pos, card.ipa]).filter(Boolean).join(" · ");
+  const word = `<h2 class="hw">${esc(card.word)}</h2>${meta ? `<p class="ipa">${esc(meta)}</p>` : ""}`;
   const defsFull = card.meanings.length ? `<div class="defs">${card.meanings.map((x,i)=>`
       <p class="def">${many ? `<span class="p">${esc(x.pos)}</span>` : ""}${esc(x.definition)}</p>
       ${i > 0 && x.synonyms && x.synonyms.length ? `<p class="syn">Similar: ${x.synonyms.slice(0, XTRA_MAX).map(esc).join(", ")}</p>` : ""}
@@ -2746,8 +2748,8 @@ async function fileWords(input){
 function filedPreview(c, opt){
   opt = opt || {};
   const m0 = c.meanings[0] || {};
-  const meta = [m0.pos, c.ipa].filter(Boolean).join(" · ");
   const many = c.meanings.length > 1;
+  const meta = (many ? [c.ipa] : [m0.pos, c.ipa]).filter(Boolean).join(" · ");
   const tag = opt.dup ? `<span class="wtag dup">Already saved</span>` : opt.saved ? `<span class="wtag dup">Saved</span>` : `<span class="wtag">Saved · +${POINTS_PER_CARD}</span>`;
   return `<article class="wcard fadein" aria-label="${esc(c.word)}">
     <div class="wtop">
