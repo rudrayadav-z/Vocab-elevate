@@ -17,9 +17,10 @@
 <meta name="description" content="Look up any English word, save it as a card, and review it on a spaced-repetition schedule. Sign in to sync across every device.">
 <meta name="theme-color" content="#FBFCFF">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icons/favicon-32.png" type="image/png" sizes="32x32">
-<link rel="icon" href="icons/favicon-16.png" type="image/png" sizes="16x16">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/tab.svg?v=3" type="image/svg+xml">
+<link rel="icon" href="icons/tab-32.png?v=3" type="image/png" sizes="32x32">
+<link rel="icon" href="icons/tab-16.png?v=3" type="image/png" sizes="16x16">
+<link rel="apple-touch-icon" href="icons/app-180.png?v=3">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://api.datamuse.com" crossorigin>
@@ -2386,7 +2387,7 @@ function renderStudy(){
     <div class="rvopts">
       <span class="counts"><b>${q.fresh.length}</b> new · <b>${q.learn.length}</b> learning · <b>${q.rev.length}</b> due${card.lapses ? ` · forgot this one ${card.lapses}×` : ""}</span>
       <button type="button" class="chip ${S().dir==="w2d" ? "on" : ""}" data-act="opt" data-k="dir" aria-pressed="${S().dir==="w2d"}" title="Show the word and guess the meaning, instead of the other way round">Show the word first</button>
-      <button type="button" class="chip ${S().typed && S().dir==="d2w" ? "on" : ""}" data-act="opt" data-k="typed" aria-pressed="${!!(S().typed && S().dir==="d2w")}" ${S().dir==="w2d" ? "disabled" : ""} title="${S().dir==="w2d" ? "Turn off “Show the word first” to type your answers" : "Type the word; spelling is checked before you grade yourself"}">Type your answer</button>
+      <button type="button" class="chip ${S().typed && S().dir==="d2w" ? "on" : ""}" data-act="opt" data-k="typed" aria-pressed="${!!(S().typed && S().dir==="d2w")}" title="See the meaning and type the word; spelling is checked before you grade yourself">Type your answer</button>
     </div>
     <div class="rvstage">
       ${(ctxBuddy("study"), "")}<div class="rvbuddy">${buddyBub()}${buddyImg()}<p class="tiphint">Tap me. Double-tap for a surprise.</p></div>
@@ -2623,7 +2624,9 @@ function renderLookRail(){
     } else cta.innerHTML = "";
   }
   const box = $("#stickerBox"); if(!box) return;
-  const wk = state.cards.filter(c => (c.added || 0) >= startOfWeek()).sort((a,b) => b.added - a.added);
+  const seen = new Set();
+  const wk = state.cards.filter(c => (c.added || 0) >= startOfWeek()).sort((a,b) => b.added - a.added)
+    .filter(c => { const k = c.word.toLowerCase(); if(seen.has(k)) return false; seen.add(k); return true; });
   box.innerHTML = `<h3 class="railh">This week's stickers</h3>` + (wk.length
     ? `<div class="stickers">${wk.slice(0, 12).map(c => `<button type="button" class="sticker" data-sticker="${esc(c.id)}" title="Show ${esc(c.word)}">${esc(c.word)}</button>`).join("")}</div>${wk.length > 12 ? `<p class="railnote">+${wk.length - 12} more this week</p>` : ""}`
     : `<p class="railnote">Every word you save this week gets a sticker here.</p>`);
@@ -2826,7 +2829,12 @@ document.addEventListener("click", e => {
   if(act === "opt"){
     if(t.disabled) return;
     if(t.dataset.k === "dir"){ S().dir = S().dir === "w2d" ? "d2w" : "w2d"; ui.typedGuess = ""; }
-    else if(t.dataset.k === "typed") S().typed = !S().typed;
+    else if(t.dataset.k === "typed"){
+      // typing means "see the meaning, type the word", so switch to that if the word is being shown first
+      if(S().dir === "w2d"){ S().dir = "d2w"; S().typed = true; ui.flipped = false; }
+      else S().typed = !S().typed;
+      ui.typedGuess = "";
+    }
     save(); render(); return;
   }
   if(act === "undo")   return undo();

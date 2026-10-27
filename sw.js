@@ -1,6 +1,6 @@
 /* Offline shell. Reviews work with no connection; lookups need one. */
-const CACHE = "vocario-v21";
-const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/favicon-32.png", "./mascot/wave.png", "./mascot/read.png", "./mascot/think.png"];
+const CACHE = "vocario-v22";
+const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icons/app-192.png", "./icons/tab-32.png", "./icons/tab.svg", "./mascot/wave.png", "./mascot/read.png", "./mascot/think.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
